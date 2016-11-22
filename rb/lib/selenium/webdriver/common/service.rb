@@ -63,8 +63,6 @@ module Selenium
 
       def stop
         return if process_exited?
-        stop_server
-      ensure
         stop_process
       end
 
@@ -91,14 +89,12 @@ module Selenium
         raise NotImplementedError, 'subclass responsibility'
       end
 
-      def stop_server
-        raise NotImplementedError, 'subclass responsibility'
+      def stop_process
+        @process.stop STOP_TIMEOUT
       end
 
-      def stop_process
-        @process.poll_for_exit STOP_TIMEOUT
-      rescue ChildProcess::TimeoutError
-        @process.stop STOP_TIMEOUT
+      def stop_server
+        connect_to_server { |http| http.get('/shutdown') }
       end
 
       def process_running?

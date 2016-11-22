@@ -27,6 +27,14 @@ module Selenium
       class Service < WebDriver::Service
         DEFAULT_PORT = 9515
 
+        def stop
+          puts "process exited? #{process_exited?}"
+          return if process_exited?
+          stop_server
+        ensure
+          stop_process
+        end
+
         private
 
         def start_process
@@ -37,8 +45,10 @@ module Selenium
           @process.start
         end
 
-        def stop_server
-          connect_to_server { |http| http.get('/shutdown') }
+        def stop_process
+          @process.poll_for_exit STOP_TIMEOUT
+        rescue ChildProcess::TimeoutError
+          super
         end
 
         def cannot_connect_error_text
