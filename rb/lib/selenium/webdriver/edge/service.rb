@@ -28,11 +28,11 @@ module Selenium
         DEFAULT_PORT = 17556
 
         def stop
-          puts "process exited? #{process_exited?}"
-          return if process_exited?
           stop_server
+          @process.poll_for_exit STOP_TIMEOUT
+        rescue ChildProcess::TimeoutError
         ensure
-          stop_process
+          super
         end
 
         private
@@ -43,12 +43,6 @@ module Selenium
 
           @process.io.inherit! if $DEBUG
           @process.start
-        end
-
-        def stop_process
-          @process.poll_for_exit STOP_TIMEOUT
-        rescue ChildProcess::TimeoutError
-          super
         end
 
         def cannot_connect_error_text
