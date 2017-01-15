@@ -17,16 +17,13 @@
 # specific language governing permissions and limitations
 # under the License
 
-
 module Selenium
   module WebDriver
     module Interactions
-
       KEY = :key
       POINTER = :pointer
       NONE = :none
       SOURCE_TYPES = [KEY, POINTER, NONE].freeze
-
     end
   end
 end

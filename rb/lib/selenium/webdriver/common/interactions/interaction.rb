@@ -21,6 +21,8 @@ module Selenium
   module WebDriver
     module Interactions
       class Interaction
+        DURATION_MULTIPLIER = 1000
+        PAUSE = :pause
 
         attr_reader :source
 
@@ -28,7 +30,23 @@ module Selenium
           raise TypeError, "'#{source.type}' is not a valid input type" unless Interactions::SOURCE_TYPES.include? source.type
           @source = source
         end
+      end
 
+      class Pause < Interaction
+        def initialize(source, duration)
+          super(source)
+          @duration = duration
+        end
+
+        def type
+          PAUSE
+        end
+
+        def encode
+          output = {type: type}
+          output[:duration] = @duration * DURATION_MULTIPLIER if @duration
+          output
+        end
       end
     end
   end

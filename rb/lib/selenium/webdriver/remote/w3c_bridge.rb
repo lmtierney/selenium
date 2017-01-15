@@ -79,7 +79,7 @@ module Selenium
 
         def driver_extensions
           [
-            DriverExtensions::HasInputDevices,
+            DriverExtensions::HasW3CActions,
             DriverExtensions::UploadsFiles,
             DriverExtensions::TakesScreenshot,
             DriverExtensions::HasSessionId,
@@ -381,43 +381,16 @@ module Selenium
         # actions
         #
 
+        def send_actions(data)
+          execute :actions, {}, {actions: data}
+        end
+
+        def release_actions
+          execute :release_actions
+        end
+
         def click_element(element)
           execute :element_click, id: element.values.first
-        end
-
-        def click
-          execute :click, {}, {button: 0}
-        end
-
-        def double_click
-          execute :double_click
-        end
-
-        def context_click
-          execute :click, {}, {button: 2}
-        end
-
-        def mouse_down
-          execute :mouse_down
-        end
-
-        def mouse_up
-          execute :mouse_up
-        end
-
-        def mouse_move_to(element, x = nil, y = nil)
-          params = {element: element}
-
-          if x && y
-            params[:xoffset] = x
-            params[:yoffset] = y
-          end
-
-          execute :mouse_move_to, {}, params
-        end
-
-        def send_keys_to_active_element(keys)
-          send_keys_to_element(active_element, keys)
         end
 
         # TODO: - Implement file verification

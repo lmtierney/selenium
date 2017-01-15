@@ -22,30 +22,18 @@ require 'securerandom'
 module Selenium
   module WebDriver
     module Interactions
-      class InputDevice
-        attr_reader :name, :actions
-
-        def initialize(name = nil)
-          @name = name || SecureRandom.uuid
-          @actions = []
-        end
-
+      class NoneInput < InputDevice
         def type
-          nil
+          Interactions::NONE
         end
 
-        def add_action(action)
-          raise TypeError, "#{action.inspect} is not a valid action" unless action.class < Interaction
-          @actions << action
+        def encode
+          return nil if no_actions?
+          {type: type, id: name, actions: @actions.map(&:encode)}
         end
 
-        def clear_actions
-          @actions.clear
-        end
-
-        def no_actions? # Determine if only pauses are present
-          actions = @actions.reject { |action| action.type == Interaction::PAUSE }
-          actions.empty?
+        def create_pause(duration = nil)
+          add_action(Pause.new(self, duration))
         end
       end
     end
