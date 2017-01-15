@@ -88,7 +88,22 @@ module Selenium
         f11: "\ue03B",
         f12: "\ue03C",
         meta: "\ue03D",
-        command: "\ue03D" # alias
+        command: "\ue03D", # alias
+        left_meta: "\ue03D", # alias
+        right_shift: "\ue050",
+        right_control: "\ue051",
+        right_alt: "\ue052",
+        right_meta: "\ue053",
+        numpad_page_up: "\ue054",
+        numpad_page_down: "\ue055",
+        numpad_end: "\ue056",
+        numpad_home: "\ue057",
+        numpad_left: "\ue058",
+        numpad_up: "\ue059",
+        numpad_right: "\ue05A",
+        numpad_down: "\ue05B",
+        numpad_insert: "\ue05C",
+        numpad_delete: "\ue05D"
       }.freeze
 
       #

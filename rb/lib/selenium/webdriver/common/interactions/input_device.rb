@@ -23,7 +23,6 @@ module Selenium
   module WebDriver
     module Interactions
       class InputDevice
-
         attr_reader :name
 
         def initialize(name = nil)
@@ -33,7 +32,6 @@ module Selenium
         def type
           nil
         end
-
       end
     end
   end

@@ -21,14 +21,12 @@ module Selenium
   module WebDriver
     module Interactions
       class Interaction
-
         attr_reader :source
 
         def initialize(source)
           raise TypeError, "'#{source.type}' is not a valid input type" unless Interactions::SOURCE_TYPES.include? source.type
           @source = source
         end
-
       end
     end
   end
