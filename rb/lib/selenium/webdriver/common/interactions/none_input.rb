@@ -22,44 +22,17 @@ require 'securerandom'
 module Selenium
   module WebDriver
     module Interactions
-      class KeyInput < InputDevice
-        SUBTYPES = {down: :keyDown, up: :keyUp, pause: :pause}.freeze
-
+      class NoneInput < InputDevice
         def type
-          Interactions::KEY
+          Interactions::NONE
         end
 
         def encode
           {type: type, id: name}
         end
 
-        def create_key_down(key)
-          TypingInteraction.new(this, SUBTYPES[:down], key)
-        end
-
-        def create_key_up(key)
-          TypingInteraction.new(this, SUBTYPES[:up], key)
-        end
-
         def create_pause
           Pause.new this
-        end
-
-        class TypingInteraction < Interaction
-          def initialize(source, type, key: nil)
-            super(source)
-            @type = assert_type(type)
-            @key = Keys.encode(key, null: false)
-          end
-
-          def assert_type(type)
-            raise TypeError, "#{type.inspect} is not a valid key subtype" unless KeyInput::SUBTYPES.include? type
-            KeyInput::SUBTYPES[type]
-          end
-
-          def encode
-            {type: @type, value: @key}
-          end
         end
       end
     end

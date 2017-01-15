@@ -119,14 +119,14 @@ module Selenium
       # @api private
       #
 
-      def self.encode(keys)
+      def self.encode(keys, null: true)
         keys.map do |arg|
           case arg
           when Symbol
             Keys[arg]
           when Array
             arg = arg.map { |e| e.is_a?(Symbol) ? Keys[e] : e }.join
-            arg << Keys[:null]
+            arg << Keys[:null] if null
 
             arg
           else

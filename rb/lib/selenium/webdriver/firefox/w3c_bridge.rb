@@ -42,7 +42,7 @@ module Selenium
         def driver_extensions
           [
             DriverExtensions::TakesScreenshot,
-            DriverExtensions::HasInputDevices,
+            DriverExtensions::HasW3CActions,
             DriverExtensions::HasWebStorage
           ]
         end

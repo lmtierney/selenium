@@ -23,14 +23,24 @@ module Selenium
   module WebDriver
     module Interactions
       class InputDevice
-        attr_reader :name
+        attr_reader :name, :actions
 
         def initialize(name = nil)
           @name = name || SecureRandom.uuid
+          @actions = []
         end
 
         def type
           nil
+        end
+
+        def add_action(action)
+          raise TypeError, "#{action.inspect} is not a valid action" unless action < Interaction
+          @actions << action
+        end
+
+        def clear_actions
+          @actions.clear
         end
       end
     end

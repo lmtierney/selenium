@@ -25,10 +25,12 @@ module Selenium
       class PointerInput < InputDevice
         KIND = {mouse: :mouse, pen: :pen, touch: :touch}.freeze
         MOUSEBUTTON = {left: 0, middle: 1, right: 2}.freeze
+        SUBTYPES = {down: :pointerDown, up: :pointerUp, move: :pointerMove, cancel: :pointerCancel, pause: :pause}.freeze
 
         attr_reader :kind
+        attr_accessor :primary
 
-        def initialize(kind, name = nil, primary = true)
+        def initialize(kind, name: nil, primary: true)
           super(name)
           @kind = assert_kind(kind)
           @primary = primary
@@ -41,7 +43,7 @@ module Selenium
         def encode
           output = {type: type, id: name}
           params = {primary: primary, pointerType: kind}
-          output[:params] = params
+          output[:parameters] = params
           output
         end
 
@@ -50,8 +52,8 @@ module Selenium
           KIND[pointer]
         end
 
-        def create_pointer_move(duration, x, y, element = nil)
-          Move.new(self, duration, x, y, element)
+        def create_pointer_move(duration: 0, x: 0, y: 0, element: nil, origin: nil)
+          Move.new(self, duration, x, y, element, origin)
         end
 
         def create_pointer_down(button)
@@ -62,9 +64,17 @@ module Selenium
           Press.new(self, Press::UP, button)
         end
 
+        def create_pause
+          Pause.new this
+        end
+
+        def create_pointer_cancel
+          Cancel.new this
+        end
+
         class Press < Interaction
-          DOWN = :pointerDown
-          UP = :pointerUp
+          DOWN = PointerInput::SUBTYPES[:down]
+          UP = PointerInput::SUBTYPES[:up]
           DIRECTIONS = [DOWN, UP].freeze
 
           def initialize(source, direction, button)
@@ -75,7 +85,7 @@ module Selenium
           end
 
           def assert_direction(direction)
-            raise TypeError, "#{direction.inspect} is not a valid pointer type" unless DIRECTIONS.include? direction
+            raise TypeError, "#{direction.inspect} is not a valid button direction" unless DIRECTIONS.include? direction
             direction
           end
 
@@ -85,19 +95,20 @@ module Selenium
         end # Press
 
         class Move < Interaction
-          DOWN = :pointerDown
-          UP = :pointerUp
-          DIRECTIONS = [DOWN, UP].freeze
+          VIEWPORT = :viewport
+          POINTER = :pointer
+          ORIGINS = [VIEWPORT, POINTER].freeze
 
-          def initialize(source, duration, x, y, element = nil)
+          def initialize(source, duration, x, y, element, origin)
             super(source)
             raise ArgumentError, 'duration value cannot be negative!' unless duration >= 0
             raise ArgumentError, 'X value cannot be negative!' unless x >= 0
             raise ArgumentError, 'Y value cannot be negative!' unless y >= 0
             @duration = duration
-            @x_value = x
-            @y_value = y
+            @x_offset = x
+            @y_offset = y
             @element = element
+            @origin = origin
           end
 
           def assert_direction(direction)
@@ -106,9 +117,19 @@ module Selenium
           end
 
           def encode
-            output = {type: :pointerMove, duration: @duration, x: @x_value, y: @y_value}
-            output[:element] = @element if @element
+            output = {type: PointerInput::SUBTYPES[:move],
+                      duration: @duration,
+                      x: @x_offset,
+                      y: @y_offset}
+            output[:origin] = @element if @element
+            output[:origin] = @origin if @origin
             output
+          end
+        end # Move
+
+        class Cancel < Interaction
+          def encode
+            {type: PointerInput::SUBTYPES[:cancel]}
           end
         end # Move
       end # PointerInput

@@ -28,6 +28,19 @@ module Selenium
           @source = source
         end
       end
+
+      class Pause < Interaction
+
+        def initialize(source, duration = nil)
+          super(source)
+          @duration = duration
+        end
+        def encode
+          output = {type: :pause}
+          output[:duration] = @duration if @duration
+          output
+        end
+      end
     end
   end
 end
