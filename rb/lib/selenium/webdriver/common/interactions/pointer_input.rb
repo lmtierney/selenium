@@ -53,86 +53,86 @@ module Selenium
         end
 
         def create_pointer_move(duration: 0, x: 0, y: 0, element: nil, origin: nil)
-          Move.new(self, duration, x, y, element, origin)
+          add_action(PointerMove.new(self, duration, x, y, element, origin))
         end
 
         def create_pointer_down(button)
-          Press.new(self, Press::DOWN, button)
+          add_action(PointerPress.new(self, Press::DOWN, button))
         end
 
         def create_pointer_up(button)
-          Press.new(self, Press::UP, button)
+          add_action(PointerPress.new(self, Press::UP, button))
         end
 
         def create_pause
-          Pause.new this
+          add_action(Pause.new(self))
         end
 
         def create_pointer_cancel
-          Cancel.new this
+          add_action(PointerCancel.new(self))
+        end
+      end
+
+      class PointerPress < Interaction
+        DOWN = PointerInput::SUBTYPES[:down]
+        UP = PointerInput::SUBTYPES[:up]
+        DIRECTIONS = [DOWN, UP].freeze
+
+        def initialize(source, direction, button)
+          super(source)
+          raise ArgumentError, 'Button number cannot be negative!' unless button >= 0
+          @direction = direction
+          @button = button
         end
 
-        class Press < Interaction
-          DOWN = PointerInput::SUBTYPES[:down]
-          UP = PointerInput::SUBTYPES[:up]
-          DIRECTIONS = [DOWN, UP].freeze
+        def assert_direction(direction)
+          raise TypeError, "#{direction.inspect} is not a valid button direction" unless DIRECTIONS.include? direction
+          direction
+        end
 
-          def initialize(source, direction, button)
-            super(source)
-            raise ArgumentError, 'Button number cannot be negative!' unless button >= 0
-            @direction = direction
-            @button = button
-          end
+        def encode
+          {type: @direction, button: @button}
+        end
+      end # Press
 
-          def assert_direction(direction)
-            raise TypeError, "#{direction.inspect} is not a valid button direction" unless DIRECTIONS.include? direction
-            direction
-          end
+      class PointerMove < Interaction
+        VIEWPORT = :viewport
+        POINTER = :pointer
+        ORIGINS = [VIEWPORT, POINTER].freeze
 
-          def encode
-            {type: @direction, button: @button}
-          end
-        end # Press
+        def initialize(source, duration, x, y, element, origin)
+          super(source)
+          raise ArgumentError, 'duration value cannot be negative!' unless duration >= 0
+          raise ArgumentError, 'X value cannot be negative!' unless x >= 0
+          raise ArgumentError, 'Y value cannot be negative!' unless y >= 0
+          @duration = duration
+          @x_offset = x
+          @y_offset = y
+          @element = element
+          @origin = origin
+        end
 
-        class Move < Interaction
-          VIEWPORT = :viewport
-          POINTER = :pointer
-          ORIGINS = [VIEWPORT, POINTER].freeze
+        def assert_direction(direction)
+          raise TypeError, "#{direction.inspect} is not a valid pointer type" unless DIRECTIONS.include? direction
+          direction
+        end
 
-          def initialize(source, duration, x, y, element, origin)
-            super(source)
-            raise ArgumentError, 'duration value cannot be negative!' unless duration >= 0
-            raise ArgumentError, 'X value cannot be negative!' unless x >= 0
-            raise ArgumentError, 'Y value cannot be negative!' unless y >= 0
-            @duration = duration
-            @x_offset = x
-            @y_offset = y
-            @element = element
-            @origin = origin
-          end
+        def encode
+          output = {type: PointerInput::SUBTYPES[:move],
+                    duration: @duration,
+                    x: @x_offset,
+                    y: @y_offset}
+          output[:origin] = @element if @element
+          output[:origin] = @origin if @origin
+          output
+        end
+      end # Move
 
-          def assert_direction(direction)
-            raise TypeError, "#{direction.inspect} is not a valid pointer type" unless DIRECTIONS.include? direction
-            direction
-          end
-
-          def encode
-            output = {type: PointerInput::SUBTYPES[:move],
-                      duration: @duration,
-                      x: @x_offset,
-                      y: @y_offset}
-            output[:origin] = @element if @element
-            output[:origin] = @origin if @origin
-            output
-          end
-        end # Move
-
-        class Cancel < Interaction
-          def encode
-            {type: PointerInput::SUBTYPES[:cancel]}
-          end
-        end # Move
-      end # PointerInput
+      class PointerCancel < Interaction
+        def encode
+          {type: PointerInput::SUBTYPES[:cancel]}
+        end
+      end # Cancel
     end
   end
 end

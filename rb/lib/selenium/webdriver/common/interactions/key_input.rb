@@ -34,22 +34,22 @@ module Selenium
         end
 
         def create_key_down(key)
-          TypingInteraction.new(this, SUBTYPES[:down], key)
+          add_action(TypingInteraction.new(this, SUBTYPES[:down], key))
         end
 
         def create_key_up(key)
-          TypingInteraction.new(this, SUBTYPES[:up], key)
+          add_action(TypingInteraction.new(this, SUBTYPES[:up], key))
         end
 
         def create_pause
-          Pause.new this
+          add_action(Pause.new(self))
         end
 
         class TypingInteraction < Interaction
           def initialize(source, type, key: nil)
             super(source)
             @type = assert_type(type)
-            @key = Keys.encode(key, null: false)
+            @key = Keys.encode(key).ord
           end
 
           def assert_type(type)

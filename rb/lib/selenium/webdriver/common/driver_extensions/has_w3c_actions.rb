@@ -19,28 +19,21 @@
 
 module Selenium
   module WebDriver
-    module Interactions
-      class Interaction
-        attr_reader :source
+    #
+    # @api private
+    #
 
-        def initialize(source)
-          raise TypeError, "'#{source.type}' is not a valid input type" unless Interactions::SOURCE_TYPES.include? source.type
-          @source = source
-        end
-      end
+    module DriverExtensions
+      module HasW3CActions
+        #
+        # @return [ActionBuilder]
+        # @api public
+        #
 
-      class Pause < Interaction
-        def initialize(source, duration = nil)
-          super(source)
-          @duration = duration
+        def action(async = false)
+          W3CActionBuilder.new Interactions::PointerInput.new(:mouse), Interactions::KeyInput.new, async
         end
-
-        def encode
-          output = {type: :pause}
-          output[:duration] = @duration if @duration
-          output
-        end
-      end
-    end
-  end
-end
+      end # HasW3CActions
+    end # DriverExtensions
+  end # WebDriver
+end # Selenium

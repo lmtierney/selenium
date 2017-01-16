@@ -32,7 +32,7 @@ module Selenium
         end
 
         def create_pause
-          Pause.new this
+          add_action(Pause.new(self))
         end
       end
     end
