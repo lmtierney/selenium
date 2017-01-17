@@ -21,7 +21,7 @@ module Selenium
   module WebDriver
     module Interactions
       class Interaction
-        DURATION_MULTIPLIER
+        DURATION_MULTIPLIER = 1000
         PAUSE = :pause
 
         attr_reader :source

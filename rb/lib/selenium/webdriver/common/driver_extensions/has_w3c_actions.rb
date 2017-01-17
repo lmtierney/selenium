@@ -31,7 +31,9 @@ module Selenium
         #
 
         def action(async = false)
-          W3CActionBuilder.new @bridge, Interactions::PointerInput.new(:mouse), Interactions::KeyInput.new, async
+          W3CActionBuilder.new @bridge,
+                               Interactions::PointerInput.new(:mouse, name: 'mouse', primary: true),
+                               Interactions::KeyInput.new('keyboard'), async
         end
       end # HasW3CActions
     end # DriverExtensions

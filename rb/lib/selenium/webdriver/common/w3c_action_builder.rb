@@ -23,6 +23,20 @@ module Selenium
     class W3CActionBuilder
       DEFAULT_MOVE_DURATION = 0.5 # 500 milliseconds
 
+      #
+      # Initialize a W3C Action Builder. Differs from previous by requiring a bridge and allowing asynchronous actions.
+      # The W3C implementation allows asynchronous actions per device. e.g. A key can be pressed at the same time that
+      # the mouse is moving. Keep in mind that pauses must be added for other devices in order to line up the actions
+      # correctly when using asynchronous.
+      #
+      # @param [Selenium::WebDriver::Remote::W3CBridge] bridge the bridge for the current driver instance
+      # @param [Selenium::WebDriver::Interactions::PointerInput] mouse PointerInput for the mouse.
+      # @param [Selenium::WebDriver::Interactions::KeyInput] keyboard KeyInput for the keyboard.
+      # @param [Boolean] async Whether to perform the actions asynchronously per device. Defaults to false for
+      #   backwards compatibility.
+      # @return [W3CActionBuilder] A self reference.
+      #
+
       def initialize(bridge, mouse, keyboard, async = false)
         # For backwards compatibility, automatically include mouse & keyboard
         @bridge = bridge
@@ -30,28 +44,38 @@ module Selenium
         @async = async
       end
 
-      def pointer_inputs
-        @devices.select { |device| device.type == Interactions::POINTER }
-      end
+      #
+      # Adds a PointerInput device
+      #
+      # @param [Selenium::WebDriver::Interactions::PointerInput] device PointerInput device
+      #
 
-      def key_input
-        @key_input ||= @devices.find { |device| device.type == Interactions::KEY }
-      end
-
-      def add_pointer_input(name, device)
-        return TypeError, "#{device.inspect} is not a valid input device" unless device < Interactions::PointerInput
+      def add_pointer_input(device)
+        return TypeError, "#{device.inspect} is not a valid pointer input device" unless device < Interactions::PointerInput
         @devices << device
         set_primary_pointer(name) if device.primary
       end
 
+      #
+      # Adds a KeyInput device
+      #
+      # @param [Selenium::WebDriver::Interactions::KeyInput] device KeyInput device
+      #
+
       def add_key_input(device)
-        return TypeError, "#{device.inspect} is not a valid input device" unless device < Interactions::PointerInput
+        return TypeError, "#{device.inspect} is not a valid key input device" unless device < Interactions::KeyInput
         @devices << device
       end
 
-      def set_primary_pointer(key)
-        pointer_inputs.each do |name, device|
-          if name == key
+      #
+      # Sets the device with the given name as the primary pointer input
+      #
+      # @param [String] name name of the PointerInput device
+      #
+
+      def set_primary_pointer(name)
+        pointer_inputs.each do |device|
+          if device.name == name
             device.primary = true
             @primary_pointer = device
           else
@@ -60,19 +84,41 @@ module Selenium
         end
       end
 
-      def primary_pointer
-        @primary_pointer ||= pointer_inputs.find(&:primary)
+      #
+      # Retrieves the input device for the given name
+      #
+      # @param [String] name name of the input device
+      # @return [Selenium::WebDriver::Interactions::InputDevice] input device with given name
+      #
+
+      def get_device(name)
+        @devices.find { |device| device.name == name }
+      end
+
+      #
+      # Retrieves the current PointerInput devices
+      #
+      # @return [Array] array of current PointerInput devices
+      #
+
+      def pointer_inputs
+        @devices.select { |device| device.type == Interactions::POINTER }
+      end
+
+      #
+      # Retrieves the current KeyInput device
+      #
+      # @return [Selenium::WebDriver::Interactions::InputDevice] current KeyInput device
+      #
+
+      def key_input
+        @key_input ||= @devices.find { |device| device.type == Interactions::KEY }
       end
 
       #
       # Performs a key press. Does not release the key - subsequent interactions may assume it's kept pressed.
       # Note that the modifier key is never released implicitly - either #key_up(key) or #release_actions must be
       # called to release the key.
-      #
-      # Equivalent to:
-      #   driver.action.click(element).send_keys(key)
-      #   # or
-      #   driver.action.click.send_keys(key)
       #
       # @example Press a key
       #
@@ -84,9 +130,8 @@ module Selenium
       #    driver.action.key_down(el, :shift).perform
       #
       # @param [Selenium::WebDriver::Element] element An optional element
-      # @param [:shift, :alt, :control, :command, :meta] The key to press.
-      # @raise [ArgumentError] if the given key is not a modifier
-      # @return [ActionBuilder] A self reference.
+      # @param [:shift, :alt, :control, :command, :meta, 'a'] key The key to press.
+      # @return [W3CActionBuilder] A self reference.
       #
 
       def key_down(*args)
@@ -110,9 +155,8 @@ module Selenium
       #   driver.action.key_up(el, :alt).perform
       #
       # @param [Selenium::WebDriver::Element] element An optional element
-      # @param [:shift, :alt, :control, :command, :meta] The modifier key to release.
-      # @raise [ArgumentError] if the given key is not a modifier key
-      # @return [ActionBuilder] A self reference.
+      # @param [:shift, :alt, :control, :command, :meta, 'a'] key The modifier key to release.
+      # @return [W3CActionBuilder] A self reference.
       #
 
       def key_up(*args)
@@ -140,7 +184,7 @@ module Selenium
       #
       # @param [Selenium::WebDriver::Element] element An optional element
       # @param [String] keys The keys to be sent.
-      # @return [ActionBuilder] A self reference.
+      # @return [W3CActionBuilder] A self reference.
       #
 
       def send_keys(*args)
@@ -164,7 +208,9 @@ module Selenium
       #    driver.action.click_and_hold(el).perform
       #
       # @param [Selenium::WebDriver::Element] element the element to move to and click.
-      # @return [ActionBuilder] A self reference.
+      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device to click with,
+      #   defaults to the primary PointerInput device.
+      # @return [W3CActionBuilder] A self reference.
       #
 
       def click_and_hold(element = nil, pointer = nil)
@@ -175,18 +221,37 @@ module Selenium
       end
 
       #
-      # Clicks (without releasing) in the middle of the given element. This is
-      # equivalent to:
+      # Releases the depressed left mouse button at the current mouse location.
       #
-      #   driver.action.move_to(element).click_and_hold
-      #
-      # @example Clicking and holding on some element
+      # @example Releasing an element after clicking and holding it
       #
       #    el = driver.find_element(id: "some_id")
-      #    driver.action.click_and_hold(el).perform
+      #    driver.action.click_and_hold(el).release.perform
       #
-      # @param [Selenium::WebDriver::Element] element the element to move to and click.
-      # @return [ActionBuilder] A self reference.
+      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device with the button
+      #   that will be pressed, defaults to the primary PointerInput device.
+      # @return [W3CActionBuilder] A self reference.
+      #
+
+      def release(pointer = nil)
+        pointer = pointer || primary_pointer
+        pointer_up(:left, pointer)
+        self
+      end
+
+      #
+      # Presses (without releasing) at the current location of the PointerInput device. This is equivalent to:
+      #
+      #   driver.action.click_and_hold(nil)
+      #
+      # @example Clicking and holding at the current location
+      #
+      #    driver.action.pointer_down(:left).perform
+      #
+      # @param [Selenium::WebDriver::Interactions::PointerPress::BUTTONS] button the button to press.
+      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device with the button
+      #   that will be pressed, defaults to the primary PointerInput device.
+      # @return [W3CActionBuilder] A self reference.
       #
 
       def pointer_down(button, pointer = nil)
@@ -197,31 +262,16 @@ module Selenium
       end
 
       #
-      # Releases the depressed left mouse button at the current mouse location.
+      # Releases the pressed mouse button at the current mouse location of the PointerInput device.
       #
-      # @example Releasing an element after clicking and holding it
+      # @example Releasing a button after clicking and holding
       #
-      #    el = driver.find_element(id: "some_id")
-      #    driver.action.click_and_hold(el).release.perform
+      #    driver.action.pointer_down(:left).pointer_up(:left).perform
       #
-      # @return [ActionBuilder] A self reference.
-      #
-
-      def release(element = nil, pointer = nil) # Why is an element being passed...
-        pointer = pointer || primary_pointer
-        pointer_up(:left, pointer)
-        self
-      end
-
-      #
-      # Releases the depressed left mouse button at the current mouse location.
-      #
-      # @example Releasing an element after clicking and holding it
-      #
-      #    el = driver.find_element(id: "some_id")
-      #    driver.action.click_and_hold(el).release.perform
-      #
-      # @return [ActionBuilder] A self reference.
+      # @param [Selenium::WebDriver::Interactions::PointerPress::BUTTONS] button the button to release.
+      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device with the button
+      #   that will be released, defaults to the primary PointerInput device.
+      # @return [W3CActionBuilder] A self reference.
       #
 
       def pointer_up(button, pointer = nil)
@@ -248,7 +298,9 @@ module Selenium
       #    driver.action.click.perform
       #
       # @param [Selenium::WebDriver::Element] element An optional element to click.
-      # @return [ActionBuilder] A self reference.
+      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device with the button
+      #   that will be released, defaults to the primary PointerInput device.
+      # @return [W3CActionBuilder] A self reference.
       #
 
       def click(element = nil, pointer = nil)
@@ -264,13 +316,21 @@ module Selenium
       #
       #   driver.action.move_to(element).double_click
       #
-      # @example Double click an element
+      # When no element is passed, the current mouse position will be double-clicked.
+      #
+      # @example Double-click an element
       #
       #    el = driver.find_element(id: "some_id")
       #    driver.action.double_click(el).perform
       #
+      # @example Double-clicking at the current mouse position
+      #
+      #    driver.action.double_click.perform
+      #
       # @param [Selenium::WebDriver::Element] element An optional element to move to.
-      # @return [ActionBuilder] A self reference.
+      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device with the button
+      #   that will be released, defaults to the primary PointerInput device.
+      # @return [W3CActionBuilder] A self reference.
       #
 
       def double_click(element = nil, pointer = nil)
@@ -285,13 +345,21 @@ module Selenium
       # Performs a context-click at middle of the given element. First performs
       # a move_to to the location of the element.
       #
+      # When no element is passed, the current mouse position will be context-clicked.
+      #
       # @example Context-click at middle of given element
       #
       #   el = driver.find_element(id: "some_id")
       #   driver.action.context_click(el).perform
       #
+      # @example Context-clicking at the current mouse position
+      #
+      #    driver.action.context_click.perform
+      #
       # @param [Selenium::WebDriver::Element] element An element to context click.
-      # @return [ActionBuilder] A self reference.
+      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device with the button
+      #   that will be released, defaults to the primary PointerInput device.
+      # @return [W3CActionBuilder] A self reference.
       #
 
       def context_click(element = nil, pointer = nil)
@@ -316,14 +384,16 @@ module Selenium
       # @param [Selenium::WebDriver::Element] source element to emulate button down at.
       # @param [Selenium::WebDriver::Element] target element to move to and release the
       #   mouse at.
-      # @return [ActionBuilder] A self reference.
+      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device with the button
+      #   that will be released, defaults to the primary PointerInput device.
+      # @return [W3CActionBuilder] A self reference.
       #
 
       def drag_and_drop(source, target, pointer = nil)
         pointer = pointer || primary_pointer
         click_and_hold(source, pointer)
         move_to(target, 0, 0, pointer)
-        release(target, pointer)
+        release(pointer)
         self
       end
 
@@ -331,6 +401,9 @@ module Selenium
       # Moves the mouse to the middle of the given element. The element is scrolled into
       # view and its location is calculated using getBoundingClientRect.  Then the
       # mouse is moved to optional offset coordinates from the element.
+      #
+      # This is adapted to be backward compatible from non-W3C actions. W3C calculates offset from the center point
+      # of the element
       #
       # Note that when using offsets, both coordinates need to be passed.
       #
@@ -346,10 +419,12 @@ module Selenium
       #
       # @param [Selenium::WebDriver::Element] element to move to.
       # @param [Integer] right_by Optional offset from the top-left corner. A negative value means
-      #   coordinates right from the element.
+      #   coordinates to the left of the element.
       # @param [Integer] down_by Optional offset from the top-left corner. A negative value means
       #   coordinates above the element.
-      # @return [ActionBuilder] A self reference.
+      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device with the button
+      #   that will be released, defaults to the primary PointerInput device.
+      # @return [W3CActionBuilder] A self reference.
       #
 
       def move_to(element, right_by = nil, down_by = nil, pointer = nil)
@@ -371,7 +446,7 @@ module Selenium
       end
 
       #
-      # Moves the mouse from its current position (or 0,0) by the given offset.
+      # Moves the mouse from its current position by the given offset.
       # If the coordinates provided are outside the viewport (the mouse will
       # end up outside the browser window) then the viewport is scrolled to
       # match.
@@ -380,13 +455,12 @@ module Selenium
       #
       #    driver.action.move_by(100, 100).perform
       #
-      # @param [Integer] right_by horizontal offset. A negative value means moving the
-      #   mouse left.
-      # @param [Integer] down_by vertical offset. A negative value means moving the mouse
-      #   up.
-      # @return [ActionBuilder] A self reference.
-      # @raise [MoveTargetOutOfBoundsError] if the provided offset is outside
-      #   the document's boundaries.
+      # @param [Integer] right_by horizontal offset. A negative value means moving the mouse left.
+      # @param [Integer] down_by vertical offset. A negative value means moving the mouse up.
+      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device with the button
+      #   that will be released, defaults to the primary PointerInput device.
+      # @return [W3CActionBuilder] A self reference.
+      # @raise [MoveTargetOutOfBoundsError] if the provided offset is outside the document's boundaries.
       #
 
       def move_by(right_by, down_by, pointer = nil)
@@ -400,22 +474,19 @@ module Selenium
       end
 
       #
-      # Moves the mouse from its current position (or 0,0) by the given offset.
+      # Moves the mouse to a given location in the viewport.
       # If the coordinates provided are outside the viewport (the mouse will
       # end up outside the browser window) then the viewport is scrolled to
       # match.
       #
-      # @example Move the mouse to a certain offset from its current position
+      # @example Move the mouse to a certain position in the viewport
       #
-      #    driver.action.move_by(100, 100).perform
+      #    driver.action.move_to_location(100, 100).perform
       #
-      # @param [Integer] x horizontal offset. A negative value means moving the
-      #   mouse left.
-      # @param [Integer] down_by vertical offset. A negative value means moving the mouse
-      #   up.
-      # @return [ActionBuilder] A self reference.
-      # @raise [MoveTargetOutOfBoundsError] if the provided offset is outside
-      #   the document's boundaries.
+      # @param [Integer] x horizontal position. Equivalent to a css 'left' value.
+      # @param [Integer] y vertical position. Equivalent to a css 'top' value.
+      # @return [W3CActionBuilder] A self reference.
+      # @raise [MoveTargetOutOfBoundsError] if the provided x or y value is outside the document's boundaries.
       #
 
       def move_to_location(x, y, pointer = nil)
@@ -428,9 +499,46 @@ module Selenium
         self
       end
 
-      def synchronize(action_device)
-        return if @async
-        @devices.each { |device| device.create_pause unless device == action_device}
+      #
+      # Creates a pause for the given device of the given duration. If no duration is given, the pause will only wait
+      # for all actions to complete in that tick.
+      #
+      # @example Send keys to an element
+      #
+      #   action_builder = driver.action
+      #   keyboard = action_builder.key_input
+      #   el = driver.find_element(id: "some_id")
+      #   driver.action.click(el).pause(keyboard).pause(keyboard).pause(keyboard).send_keys('keys').perform
+      #
+      # @param [InputDevice] device Input device to pause
+      # @param [Float] duration Duration to pause
+      # @return [W3CActionBuilder] A self reference.
+      #
+
+      def pause(device, duration = nil)
+        device.create_pause(duration)
+        self
+      end
+
+      #
+      # Creates multiple pauses for the given device of the given duration.
+      #
+      # @example Send keys to an element
+      #
+      #   action_builder = driver.action
+      #   keyboard = action_builder.key_input
+      #   el = driver.find_element(id: "some_id")
+      #   driver.action.click(el).pauses(keyboard, 3).send_keys('keys').perform
+      #
+      # @param [InputDevice] device Input device to pause
+      # @param [Integer] number of pauses to add for the device
+      # @param [Float] duration Duration to pause
+      # @return [W3CActionBuilder] A self reference.
+      #
+
+      def pauses(device, number, duration = nil)
+        number.times { device.create_pause(duration) }
+        self
       end
 
       #
@@ -443,12 +551,43 @@ module Selenium
         nil
       end
 
+      #
+      # Clears all actions from the builder.
+      #
+
       def clear_all_actions
         @devices.each(&:clear_actions)
       end
 
+      #
+      # Releases all action states from the browser.
+      #
+
       def release_actions
         @bridge.release_actions
+      end
+
+      private
+
+      #
+      # Adds pauses for all devices but the given device
+      #
+      # @param [InputDevice] action_device Input device to pause
+      #
+
+      def synchronize(action_device)
+        return if @async
+        @devices.each { |device| device.create_pause unless device == action_device }
+      end
+
+      #
+      # Retrieves the primary pointer input
+      #
+      # @return [PointerInput] primary PointerInput
+      #
+
+      def primary_pointer
+        pointer_inputs.find(&:primary)
       end
     end # W3CActionBuilder
   end # WebDriver
