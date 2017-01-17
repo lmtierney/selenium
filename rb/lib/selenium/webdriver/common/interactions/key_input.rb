@@ -30,7 +30,7 @@ module Selenium
         end
 
         def encode
-          return nil if no_actions
+          return nil if no_actions?
           {type: type, id: name, actions: @actions.map(&:encode)}
         end
 
@@ -42,8 +42,8 @@ module Selenium
           add_action(TypingInteraction.new(self, :up, key))
         end
 
-        def create_pause
-          add_action(Pause.new(self))
+        def create_pause(duration = nil)
+          add_action(Pause.new(self, duration))
         end
 
         class TypingInteraction < Interaction

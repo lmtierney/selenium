@@ -65,10 +65,9 @@ module Selenium
       end
 
       #
-      # Performs a modifier key press. Does not release
-      # the modifier key - subsequent interactions may assume it's kept pressed.
-      # Note that the modifier key is never released implicitly - either
-      # #key_up(key) or #send_keys(:null) must be called to release the modifier.
+      # Performs a key press. Does not release the key - subsequent interactions may assume it's kept pressed.
+      # Note that the modifier key is never released implicitly - either #key_up(key) or #release_actions must be
+      # called to release the key.
       #
       # Equivalent to:
       #   driver.action.click(element).send_keys(key)
@@ -84,14 +83,14 @@ module Selenium
       #    el = driver.find_element(id: "some_id")
       #    driver.action.key_down(el, :shift).perform
       #
-      # @param [:shift, :alt, :control, :command, :meta] The key to press.
       # @param [Selenium::WebDriver::Element] element An optional element
+      # @param [:shift, :alt, :control, :command, :meta] The key to press.
       # @raise [ArgumentError] if the given key is not a modifier
       # @return [ActionBuilder] A self reference.
       #
 
       def key_down(*args)
-        [args.shift] if args.first.is_a? Element # Handle this later...
+        click(args.shift) if args.first.is_a? Element
         key_input.create_key_down(args.last)
         synchronize(key_input)
         self
@@ -110,14 +109,14 @@ module Selenium
       #   el = driver.find_element(id: "some_id")
       #   driver.action.key_up(el, :alt).perform
       #
-      # @param [:shift, :alt, :control, :command, :meta] The modifier key to release.
       # @param [Selenium::WebDriver::Element] element An optional element
+      # @param [:shift, :alt, :control, :command, :meta] The modifier key to release.
       # @raise [ArgumentError] if the given key is not a modifier key
       # @return [ActionBuilder] A self reference.
       #
 
       def key_up(*args)
-        [args.shift] if args.first.is_a? Element # Handle this later...
+        click(args.shift) if args.first.is_a? Element
         key_input.create_key_up(args.last)
         synchronize(key_input)
         self
@@ -145,8 +144,8 @@ module Selenium
       #
 
       def send_keys(*args)
-        [args.shift] if args.first.is_a? Element # Handle this later...
-        args.last.chars.each do |character|
+        click(args.shift) if args.first.is_a? Element
+        args.last.each_char do |character|
           key_down(character)
           key_up(character)
         end
@@ -171,7 +170,7 @@ module Selenium
       def click_and_hold(element = nil, pointer = nil)
         pointer = pointer || primary_pointer
         move_to(element, 0, 0, pointer) if element
-        pointer_down(Interactions::PointerInput::BUTTON[:left], pointer)
+        pointer_down(:left, pointer)
         self
       end
 
@@ -210,7 +209,7 @@ module Selenium
 
       def release(element = nil, pointer = nil) # Why is an element being passed...
         pointer = pointer || primary_pointer
-        pointer_up(Interactions::PointerInput::BUTTON[:left], pointer)
+        pointer_up(:left, pointer)
         self
       end
 
@@ -255,8 +254,8 @@ module Selenium
       def click(element = nil, pointer = nil)
         pointer = pointer || primary_pointer
         move_to(element, 0, 0, pointer) if element
-        pointer_down(Interactions::PointerInput::BUTTON[:left], pointer)
-        pointer_up(Interactions::PointerInput::BUTTON[:left], pointer)
+        pointer_down(:left, pointer)
+        pointer_up(:left, pointer)
         self
       end
 
@@ -277,8 +276,8 @@ module Selenium
       def double_click(element = nil, pointer = nil)
         pointer = pointer || primary_pointer
         move_to(element, 0, 0, pointer) if element
-        click(element, pointer)
-        click(element, pointer)
+        click(nil, pointer)
+        click(nil, pointer)
         self
       end
 
@@ -298,8 +297,8 @@ module Selenium
       def context_click(element = nil, pointer = nil)
         pointer = pointer || primary_pointer
         move_to(element, 0, 0, pointer) if element
-        pointer_down(Interactions::PointerInput::BUTTON[:right], pointer)
-        pointer_up(Interactions::PointerInput::BUTTON[:right], pointer)
+        pointer_down(:right, pointer)
+        pointer_up(:right, pointer)
         self
       end
 

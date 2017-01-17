@@ -24,7 +24,6 @@ module Selenium
     module Interactions
       class PointerInput < InputDevice
         KIND = {mouse: :mouse, pen: :pen, touch: :touch}.freeze
-        BUTTON = {left: 0, middle: 1, right: 2}.freeze
 
         attr_reader :kind
         attr_accessor :primary
@@ -40,7 +39,7 @@ module Selenium
         end
 
         def encode
-          return nil if no_actions
+          return nil if no_actions?
           output = {type: type, id: name, actions: @actions.map(&:encode)}
           params = {primary: primary, pointerType: kind}
           output[:parameters] = params
@@ -64,8 +63,8 @@ module Selenium
           add_action(PointerPress.new(self, :up, button))
         end
 
-        def create_pause
-          add_action(Pause.new(self))
+        def create_pause(duration = nil)
+          add_action(Pause.new(self, duration))
         end
 
         def create_pointer_cancel
@@ -74,17 +73,26 @@ module Selenium
       end
 
       class PointerPress < Interaction
+        BUTTONS = {left: 0, middle: 1, right: 2}.freeze
         DIRECTIONS = {down: :pointerDown, up: :pointerUp}.freeze
 
         def initialize(source, direction, button)
           super(source)
-          raise ArgumentError, 'Button number cannot be negative!' unless button >= 0
           @direction = assert_direction(direction)
-          @button = button
+          @button = assert_button(button)
         end
 
         def type
           @direction
+        end
+
+        def assert_button(button)
+          if button.is_a? Symbol
+            raise ArgumentError, "#{button.inspec} is not a valid button!" unless BUTTONS.key? button
+            button = BUTTONS[button]
+          end
+          raise ArgumentError, 'Button number cannot be negative!' unless button >= 0
+          button
         end
 
         def assert_direction(direction)
@@ -107,7 +115,7 @@ module Selenium
           raise ArgumentError, 'duration value cannot be negative!' unless duration >= 0
           raise ArgumentError, 'X value cannot be negative!' unless x >= 0
           raise ArgumentError, 'Y value cannot be negative!' unless y >= 0
-          @duration = duration
+          @duration = duration * DURATION_MULTIPLIER
           @x_offset = x
           @y_offset = y
           @element = element
@@ -126,7 +134,7 @@ module Selenium
         def encode
           output = {type: type, duration: @duration, x: @x_offset, y: @y_offset}
           output[:origin] = @element if @element
-          output[:origin] = @origin if @origin
+          output[:origin] = @origin if @origin && element.nil?
           output
         end
       end # Move

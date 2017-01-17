@@ -43,7 +43,7 @@ module Selenium
           @actions.clear
         end
 
-        def no_actions # Determine if only pauses are present
+        def no_actions? # Determine if only pauses are present
           actions = @actions.reject { |action| action.type == Interaction::PAUSE }
           actions.empty?
         end

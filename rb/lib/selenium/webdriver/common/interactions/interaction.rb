@@ -21,6 +21,7 @@ module Selenium
   module WebDriver
     module Interactions
       class Interaction
+        DURATION_MULTIPLIER
         PAUSE = :pause
 
         attr_reader :source
@@ -32,7 +33,7 @@ module Selenium
       end
 
       class Pause < Interaction
-        def initialize(source, duration = nil)
+        def initialize(source, duration)
           super(source)
           @duration = duration
         end
@@ -43,7 +44,7 @@ module Selenium
 
         def encode
           output = {type: type}
-          output[:duration] = @duration if @duration
+          output[:duration] = @duration * DURATION_MULTIPLIER if @duration
           output
         end
       end
