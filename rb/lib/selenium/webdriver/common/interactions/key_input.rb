@@ -30,15 +30,16 @@ module Selenium
         end
 
         def encode
-          {type: type, id: name}
+          return nil if no_actions
+          {type: type, id: name, actions: @actions.map(&:encode)}
         end
 
         def create_key_down(key)
-          add_action(TypingInteraction.new(this, SUBTYPES[:down], key))
+          add_action(TypingInteraction.new(self, :down, key))
         end
 
         def create_key_up(key)
-          add_action(TypingInteraction.new(this, SUBTYPES[:up], key))
+          add_action(TypingInteraction.new(self, :up, key))
         end
 
         def create_pause
@@ -46,24 +47,21 @@ module Selenium
         end
 
         class TypingInteraction < Interaction
-          def initialize(source, type, key: nil)
+          attr_reader :type
+
+          def initialize(source, type, key)
             super(source)
             @type = assert_type(type)
-            @key = Keys.encode(key).ord.to_s
-          end
-
-          def type
-            @type
+            @key = Keys.encode_key(key)
           end
 
           def assert_type(type)
-            raise TypeError, "#{type.inspect} is not a valid key subtype" unless KeyInput::SUBTYPES.include? type
+            raise TypeError, "#{type.inspect} is not a valid key subtype" unless KeyInput::SUBTYPES.key? type
             KeyInput::SUBTYPES[type]
           end
 
           def encode
-            return nil if no_actions
-            {type: @type, value: @key, actions: @actions.map(&:encode)}
+            {type: @type, value: @key}
           end
         end
       end

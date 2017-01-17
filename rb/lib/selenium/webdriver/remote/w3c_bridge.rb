@@ -382,7 +382,7 @@ module Selenium
         #
 
         def send_actions(data)
-          execute :actions, actions: data
+          execute :actions, {}, {actions: data}
         end
 
         def release_actions

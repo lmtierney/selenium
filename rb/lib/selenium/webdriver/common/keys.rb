@@ -120,18 +120,24 @@ module Selenium
       #
 
       def self.encode(keys)
-        keys.map do |arg|
-          case arg
-          when Symbol
-            Keys[arg]
-          when Array
-            arg = arg.map { |e| e.is_a?(Symbol) ? Keys[e] : e }.join
-            arg << Keys[:null]
+        keys.map { |key| encode_key(key) }
+      end
 
-            arg
-          else
-            arg.to_s
-          end
+      #
+      # @api private
+      #
+
+      def self.encode_key(key)
+        case key
+        when Symbol
+          Keys[key]
+        when Array
+          key = key.map { |e| e.is_a?(Symbol) ? Keys[e] : e }.join
+          key << Keys[:null]
+
+          key
+        else
+          key.to_s
         end
       end
     end # Keys

@@ -35,7 +35,7 @@ module Selenium
         end
 
         def add_action(action)
-          raise TypeError, "#{action.inspect} is not a valid action" unless action < Interaction
+          raise TypeError, "#{action.inspect} is not a valid action" unless action.class < Interaction
           @actions << action
         end
 
@@ -44,7 +44,7 @@ module Selenium
         end
 
         def no_actions # Determine if only pauses are present
-          actions = @actions.reject { |action| action.type == Interaction::PAUSE}
+          actions = @actions.reject { |action| action.type == Interaction::PAUSE }
           actions.empty?
         end
       end

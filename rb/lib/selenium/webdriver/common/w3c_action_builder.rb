@@ -17,20 +17,16 @@
 # specific language governing permissions and limitations
 # under the License.
 
-require 'json'
-
 module Selenium
   module WebDriver
 
     class W3CActionBuilder
       DEFAULT_MOVE_DURATION = 0.5 # 500 milliseconds
 
-      def initialize(mouse, keyboard, async = false)
-        @devices = {
-            mouse: mouse,
-            keyboard: keyboard
-        } # For backwards compatibility, automatically include mouse & keyboard
-
+      def initialize(bridge, mouse, keyboard, async = false)
+        # For backwards compatibility, automatically include mouse & keyboard
+        @bridge = bridge
+        @devices = [mouse, keyboard]
         @async = async
       end
 
@@ -39,26 +35,33 @@ module Selenium
       end
 
       def key_input
-        @devices.find { |device| device.type == Interactions::KEY }
+        @key_input ||= @devices.find { |device| device.type == Interactions::KEY }
       end
 
       def add_pointer_input(name, device)
         return TypeError, "#{device.inspect} is not a valid input device" unless device < Interactions::PointerInput
-        @devices[name] = device
+        @devices << device
         set_primary_pointer(name) if device.primary
       end
 
-      def add_key_input(name, device)
+      def add_key_input(device)
         return TypeError, "#{device.inspect} is not a valid input device" unless device < Interactions::PointerInput
-        @devices[name] = device
+        @devices << device
       end
 
       def set_primary_pointer(key)
-        pointer_inputs.each { |name, device| device.primary = false unless name == key }
+        pointer_inputs.each do |name, device|
+          if name == key
+            device.primary = true
+            @primary_pointer = device
+          else
+            device.primary = false
+          end
+        end
       end
 
       def primary_pointer
-        pointer_inputs.find(&:primary)
+        @primary_pointer ||= pointer_inputs.find(&:primary)
       end
 
       #
@@ -143,9 +146,9 @@ module Selenium
 
       def send_keys(*args)
         [args.shift] if args.first.is_a? Element # Handle this later...
-        args.last.each do |character|
-          key_input.create_key_down(character)
-          key_input.create_key_up(character)
+        args.last.chars.each do |character|
+          key_down(character)
+          key_up(character)
         end
         self
       end
@@ -189,7 +192,6 @@ module Selenium
 
       def pointer_down(button, pointer = nil)
         pointer = pointer || primary_pointer
-        move_to(element, 0, 0, pointer) if element
         pointer.create_pointer_down(button)
         synchronize(pointer)
         self
@@ -351,17 +353,20 @@ module Selenium
       # @return [ActionBuilder] A self reference.
       #
 
-      def move_to(element, right_by = 0, down_by = 0, pointer = nil)
+      def move_to(element, right_by = nil, down_by = nil, pointer = nil)
         pointer = pointer || primary_pointer
         # New actions offset is from center of element
-        if right_by != 0 || down_by != 0
+        if right_by || down_by
           size = element.size
           left_offset = (size[:width] / 2).to_i
           top_offset = (size[:height] / 2).to_i
-          right_by = -left_offset + right_by
-          down_by = -top_offset + down_by
+          left = -left_offset + right_by
+          top = -top_offset + down_by
+        else
+          left = 0
+          top = 0
         end
-        pointer.create_pointer_move(DEFAULT_MOVE_DURATION, x: right_by, y: down_by, element: element)
+        pointer.create_pointer_move(DEFAULT_MOVE_DURATION, x: left, y: top, element: element)
         synchronize(key_input)
         self
       end
@@ -434,13 +439,16 @@ module Selenium
       #
 
       def perform
-        json = @devices.map(&:encode).compact.to_json
-        @bridge.send_actions json
+        @bridge.send_actions @devices.map(&:encode).compact
+        clear_all_actions
         nil
       end
 
       def clear_all_actions
-        @device.each(&:clear_actions)
+        @devices.each(&:clear_actions)
+      end
+
+      def release_actions
         @bridge.release_actions
       end
     end # W3CActionBuilder

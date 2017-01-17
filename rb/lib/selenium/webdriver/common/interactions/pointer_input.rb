@@ -25,7 +25,6 @@ module Selenium
       class PointerInput < InputDevice
         KIND = {mouse: :mouse, pen: :pen, touch: :touch}.freeze
         BUTTON = {left: 0, middle: 1, right: 2}.freeze
-        SUBTYPES = {down: :pointerDown, up: :pointerUp, move: :pointerMove, cancel: :pointerCancel, pause: :pause}.freeze
 
         attr_reader :kind
         attr_accessor :primary
@@ -58,11 +57,11 @@ module Selenium
         end
 
         def create_pointer_down(button)
-          add_action(PointerPress.new(self, Press::DOWN, button))
+          add_action(PointerPress.new(self, :down, button))
         end
 
         def create_pointer_up(button)
-          add_action(PointerPress.new(self, Press::UP, button))
+          add_action(PointerPress.new(self, :up, button))
         end
 
         def create_pause
@@ -75,14 +74,12 @@ module Selenium
       end
 
       class PointerPress < Interaction
-        DOWN = PointerInput::SUBTYPES[:down]
-        UP = PointerInput::SUBTYPES[:up]
-        DIRECTIONS = [DOWN, UP].freeze
+        DIRECTIONS = {down: :pointerDown, up: :pointerUp}.freeze
 
         def initialize(source, direction, button)
           super(source)
           raise ArgumentError, 'Button number cannot be negative!' unless button >= 0
-          @direction = direction
+          @direction = assert_direction(direction)
           @button = button
         end
 
@@ -91,8 +88,8 @@ module Selenium
         end
 
         def assert_direction(direction)
-          raise TypeError, "#{direction.inspect} is not a valid button direction" unless DIRECTIONS.include? direction
-          direction
+          raise TypeError, "#{direction.inspect} is not a valid button direction" unless DIRECTIONS.key? direction
+          DIRECTIONS[direction]
         end
 
         def encode
@@ -118,7 +115,7 @@ module Selenium
         end
 
         def type
-          PointerInput::SUBTYPES[:move]
+          :move
         end
 
         def assert_direction(direction)
@@ -136,7 +133,7 @@ module Selenium
 
       class PointerCancel < Interaction
         def type
-          PointerInput::SUBTYPES[:cancel]
+          :cancel
         end
 
         def encode
