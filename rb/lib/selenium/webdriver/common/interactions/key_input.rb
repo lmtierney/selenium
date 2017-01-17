@@ -49,7 +49,11 @@ module Selenium
           def initialize(source, type, key: nil)
             super(source)
             @type = assert_type(type)
-            @key = Keys.encode(key).ord
+            @key = Keys.encode(key).ord.to_s
+          end
+
+          def type
+            @type
           end
 
           def assert_type(type)
@@ -58,7 +62,8 @@ module Selenium
           end
 
           def encode
-            {type: @type, value: @key}
+            return nil if no_actions
+            {type: @type, value: @key, actions: @actions.map(&:encode)}
           end
         end
       end

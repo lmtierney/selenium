@@ -21,6 +21,8 @@ module Selenium
   module WebDriver
     module Interactions
       class Interaction
+        PAUSE = :pause
+
         attr_reader :source
 
         def initialize(source)
@@ -35,8 +37,12 @@ module Selenium
           @duration = duration
         end
 
+        def type
+          PAUSE
+        end
+
         def encode
-          output = {type: :pause}
+          output = {type: type}
           output[:duration] = @duration if @duration
           output
         end

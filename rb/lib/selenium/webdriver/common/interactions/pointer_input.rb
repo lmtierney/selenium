@@ -24,7 +24,7 @@ module Selenium
     module Interactions
       class PointerInput < InputDevice
         KIND = {mouse: :mouse, pen: :pen, touch: :touch}.freeze
-        MOUSEBUTTON = {left: 0, middle: 1, right: 2}.freeze
+        BUTTON = {left: 0, middle: 1, right: 2}.freeze
         SUBTYPES = {down: :pointerDown, up: :pointerUp, move: :pointerMove, cancel: :pointerCancel, pause: :pause}.freeze
 
         attr_reader :kind
@@ -41,7 +41,8 @@ module Selenium
         end
 
         def encode
-          output = {type: type, id: name}
+          return nil if no_actions
+          output = {type: type, id: name, actions: @actions.map(&:encode)}
           params = {primary: primary, pointerType: kind}
           output[:parameters] = params
           output
@@ -85,13 +86,17 @@ module Selenium
           @button = button
         end
 
+        def type
+          @direction
+        end
+
         def assert_direction(direction)
           raise TypeError, "#{direction.inspect} is not a valid button direction" unless DIRECTIONS.include? direction
           direction
         end
 
         def encode
-          {type: @direction, button: @button}
+          {type: type, button: @button}
         end
       end # Press
 
@@ -112,16 +117,17 @@ module Selenium
           @origin = origin
         end
 
+        def type
+          PointerInput::SUBTYPES[:move]
+        end
+
         def assert_direction(direction)
           raise TypeError, "#{direction.inspect} is not a valid pointer type" unless DIRECTIONS.include? direction
           direction
         end
 
         def encode
-          output = {type: PointerInput::SUBTYPES[:move],
-                    duration: @duration,
-                    x: @x_offset,
-                    y: @y_offset}
+          output = {type: type, duration: @duration, x: @x_offset, y: @y_offset}
           output[:origin] = @element if @element
           output[:origin] = @origin if @origin
           output
@@ -129,8 +135,12 @@ module Selenium
       end # Move
 
       class PointerCancel < Interaction
+        def type
+          PointerInput::SUBTYPES[:cancel]
+        end
+
         def encode
-          {type: PointerInput::SUBTYPES[:cancel]}
+          {type: type}
         end
       end # Cancel
     end

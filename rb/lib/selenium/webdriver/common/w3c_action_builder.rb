@@ -17,10 +17,13 @@
 # specific language governing permissions and limitations
 # under the License.
 
+require 'json'
+
 module Selenium
   module WebDriver
 
     class W3CActionBuilder
+      DEFAULT_MOVE_DURATION = 0.5 # 500 milliseconds
 
       def initialize(mouse, keyboard, async = false)
         @devices = {
@@ -162,7 +165,164 @@ module Selenium
       # @return [ActionBuilder] A self reference.
       #
 
-      def click_and_hold(element = nil)
+      def click_and_hold(element = nil, pointer = nil)
+        pointer = pointer || primary_pointer
+        move_to(element, 0, 0, pointer) if element
+        pointer_down(Interactions::PointerInput::BUTTON[:left], pointer)
+        self
+      end
+
+      #
+      # Clicks (without releasing) in the middle of the given element. This is
+      # equivalent to:
+      #
+      #   driver.action.move_to(element).click_and_hold
+      #
+      # @example Clicking and holding on some element
+      #
+      #    el = driver.find_element(id: "some_id")
+      #    driver.action.click_and_hold(el).perform
+      #
+      # @param [Selenium::WebDriver::Element] element the element to move to and click.
+      # @return [ActionBuilder] A self reference.
+      #
+
+      def pointer_down(button, pointer = nil)
+        pointer = pointer || primary_pointer
+        move_to(element, 0, 0, pointer) if element
+        pointer.create_pointer_down(button)
+        synchronize(pointer)
+        self
+      end
+
+      #
+      # Releases the depressed left mouse button at the current mouse location.
+      #
+      # @example Releasing an element after clicking and holding it
+      #
+      #    el = driver.find_element(id: "some_id")
+      #    driver.action.click_and_hold(el).release.perform
+      #
+      # @return [ActionBuilder] A self reference.
+      #
+
+      def release(element = nil, pointer = nil) # Why is an element being passed...
+        pointer = pointer || primary_pointer
+        pointer_up(Interactions::PointerInput::BUTTON[:left], pointer)
+        self
+      end
+
+      #
+      # Releases the depressed left mouse button at the current mouse location.
+      #
+      # @example Releasing an element after clicking and holding it
+      #
+      #    el = driver.find_element(id: "some_id")
+      #    driver.action.click_and_hold(el).release.perform
+      #
+      # @return [ActionBuilder] A self reference.
+      #
+
+      def pointer_up(button, pointer = nil)
+        pointer = pointer || primary_pointer
+        pointer.create_pointer_up(button)
+        synchronize(pointer)
+        self
+      end
+
+      #
+      # Clicks in the middle of the given element. Equivalent to:
+      #
+      #   driver.action.move_to(element).click
+      #
+      # When no element is passed, the current mouse position will be clicked.
+      #
+      # @example Clicking on an element
+      #
+      #    el = driver.find_element(id: "some_id")
+      #    driver.action.click(el).perform
+      #
+      # @example Clicking at the current mouse position
+      #
+      #    driver.action.click.perform
+      #
+      # @param [Selenium::WebDriver::Element] element An optional element to click.
+      # @return [ActionBuilder] A self reference.
+      #
+
+      def click(element = nil, pointer = nil)
+        pointer = pointer || primary_pointer
+        move_to(element, 0, 0, pointer) if element
+        pointer_down(Interactions::PointerInput::BUTTON[:left], pointer)
+        pointer_up(Interactions::PointerInput::BUTTON[:left], pointer)
+        self
+      end
+
+      #
+      # Performs a double-click at middle of the given element. Equivalent to:
+      #
+      #   driver.action.move_to(element).double_click
+      #
+      # @example Double click an element
+      #
+      #    el = driver.find_element(id: "some_id")
+      #    driver.action.double_click(el).perform
+      #
+      # @param [Selenium::WebDriver::Element] element An optional element to move to.
+      # @return [ActionBuilder] A self reference.
+      #
+
+      def double_click(element = nil, pointer = nil)
+        pointer = pointer || primary_pointer
+        move_to(element, 0, 0, pointer) if element
+        click(element, pointer)
+        click(element, pointer)
+        self
+      end
+
+      #
+      # Performs a context-click at middle of the given element. First performs
+      # a move_to to the location of the element.
+      #
+      # @example Context-click at middle of given element
+      #
+      #   el = driver.find_element(id: "some_id")
+      #   driver.action.context_click(el).perform
+      #
+      # @param [Selenium::WebDriver::Element] element An element to context click.
+      # @return [ActionBuilder] A self reference.
+      #
+
+      def context_click(element = nil, pointer = nil)
+        pointer = pointer || primary_pointer
+        move_to(element, 0, 0, pointer) if element
+        pointer_down(Interactions::PointerInput::BUTTON[:right], pointer)
+        pointer_up(Interactions::PointerInput::BUTTON[:right], pointer)
+        self
+      end
+
+      #
+      # A convenience method that performs click-and-hold at the location of the
+      # source element, moves to the location of the target element, then
+      # releases the mouse.
+      #
+      # @example Drag and drop one element onto another
+      #
+      #   el1 = driver.find_element(id: "some_id1")
+      #   el2 = driver.find_element(id: "some_id2")
+      #   driver.action.drag_and_drop(el1, el2).perform
+      #
+      # @param [Selenium::WebDriver::Element] source element to emulate button down at.
+      # @param [Selenium::WebDriver::Element] target element to move to and release the
+      #   mouse at.
+      # @return [ActionBuilder] A self reference.
+      #
+
+      def drag_and_drop(source, target, pointer = nil)
+        pointer = pointer || primary_pointer
+        click_and_hold(source, pointer)
+        move_to(target, 0, 0, pointer)
+        release(target, pointer)
         self
       end
 
@@ -193,7 +353,15 @@ module Selenium
 
       def move_to(element, right_by = 0, down_by = 0, pointer = nil)
         pointer = pointer || primary_pointer
-        pointer.create_pointer_move(0.5, x: right_by, y: down_by, element: element)
+        # New actions offset is from center of element
+        if right_by != 0 || down_by != 0
+          size = element.size
+          left_offset = (size[:width] / 2).to_i
+          top_offset = (size[:height] / 2).to_i
+          right_by = -left_offset + right_by
+          down_by = -top_offset + down_by
+        end
+        pointer.create_pointer_move(DEFAULT_MOVE_DURATION, x: right_by, y: down_by, element: element)
         synchronize(key_input)
         self
       end
@@ -219,7 +387,7 @@ module Selenium
 
       def move_by(right_by, down_by, pointer = nil)
         pointer = pointer || primary_pointer
-        pointer.create_pointer_move(0.5,
+        pointer.create_pointer_move(DEFAULT_MOVE_DURATION,
                                     x: Integer(right_by),
                                     y: Integer(down_by),
                                     origin: Interactions::PointerMove::POINTER)
@@ -248,7 +416,7 @@ module Selenium
 
       def move_to_location(x, y, pointer = nil)
         pointer = pointer || primary_pointer
-        pointer.create_pointer_move(0.5,
+        pointer.create_pointer_move(DEFAULT_MOVE_DURATION,
                                     x: Integer(x),
                                     y: Integer(y),
                                     origin: Interactions::PointerMove::VIEWPORT)
@@ -259,6 +427,21 @@ module Selenium
       def synchronize(action_device)
         return if @async
         @devices.each { |device| device.create_pause unless device == action_device}
+      end
+
+      #
+      # Executes the actions added to the builder.
+      #
+
+      def perform
+        json = @devices.map(&:encode).compact.to_json
+        @bridge.send_actions json
+        nil
+      end
+
+      def clear_all_actions
+        @device.each(&:clear_actions)
+        @bridge.release_actions
       end
     end # W3CActionBuilder
   end # WebDriver

@@ -28,7 +28,8 @@ module Selenium
         end
 
         def encode
-          {type: type, id: name}
+          return nil if no_actions
+          {type: type, id: name, actions: @actions.map(&:encode)}
         end
 
         def create_pause
