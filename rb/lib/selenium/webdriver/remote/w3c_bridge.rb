@@ -79,7 +79,7 @@ module Selenium
 
         def driver_extensions
           [
-            DriverExtensions::HasW3CActions,
+            DriverExtensions::HasInputDevices,
             DriverExtensions::UploadsFiles,
             DriverExtensions::TakesScreenshot,
             DriverExtensions::HasSessionId,
