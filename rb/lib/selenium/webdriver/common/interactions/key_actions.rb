@@ -43,7 +43,7 @@ module Selenium
       def key_down(*args)
         click(args.shift) if args.first.is_a? Element
         key_input.create_key_down(args.last)
-        synchronize(key_input)
+        tick(key_input)
         self
       end
 
@@ -68,7 +68,7 @@ module Selenium
       def key_up(*args)
         click(args.shift) if args.first.is_a? Element
         key_input.create_key_up(args.last)
-        synchronize(key_input)
+        tick(key_input)
         self
       end
 

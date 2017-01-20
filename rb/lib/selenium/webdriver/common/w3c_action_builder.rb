@@ -200,14 +200,14 @@ module Selenium
       private
 
       #
-      # Adds pauses for all devices but the given device
+      # Adds pauses for all devices but the given devices
       #
-      # @param [InputDevice] action_device Input device to pause
+      # @param [Array[InputDevice]] action_devices Array of Input Devices performing an action in this tick.
       #
 
-      def synchronize(action_device)
+      def tick(*action_devices)
         return if @async
-        @devices.each { |device| device.create_pause unless device == action_device }
+        @devices.each { |device| device.create_pause unless action_devices.include? device }
       end
 
       #

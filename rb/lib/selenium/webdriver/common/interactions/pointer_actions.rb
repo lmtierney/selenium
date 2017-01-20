@@ -39,7 +39,7 @@ module Selenium
       def pointer_down(button, pointer = nil)
         pointer = pointer || primary_pointer
         pointer.create_pointer_down(button)
-        synchronize(pointer)
+        tick(pointer)
         self
       end
 
@@ -59,7 +59,7 @@ module Selenium
       def pointer_up(button, pointer = nil)
         pointer = pointer || primary_pointer
         pointer.create_pointer_up(button)
-        synchronize(pointer)
+        tick(pointer)
         self
       end
 
@@ -107,7 +107,7 @@ module Selenium
           top = 0
         end
         pointer.create_pointer_move(DEFAULT_MOVE_DURATION, x: left, y: top, element: element)
-        synchronize(key_input)
+        tick(key_input)
         self
       end
 
@@ -135,7 +135,7 @@ module Selenium
                                     x: Integer(right_by),
                                     y: Integer(down_by),
                                     origin: Interactions::PointerMove::POINTER)
-        synchronize(pointer)
+        tick(pointer)
         self
       end
 
@@ -161,7 +161,7 @@ module Selenium
                                     x: Integer(x),
                                     y: Integer(y),
                                     origin: Interactions::PointerMove::VIEWPORT)
-        synchronize(pointer)
+        tick(pointer)
         self
       end
 
