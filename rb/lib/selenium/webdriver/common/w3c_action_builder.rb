@@ -62,7 +62,7 @@ module Selenium
 
       def add_pointer_input(name, kind, primary = false)
         return TypeError, "#{kind.inspect} is not a valid kind of pointer input" unless Interactions::PointerInput.key? kind
-        @devices << Interactions::PointerInput.new(kind, name: name, primary: primary)
+        add_device(Interactions::PointerInput.new(kind, name: name, primary: primary))
         set_primary_pointer(name) if primary
       end
 
@@ -88,14 +88,7 @@ module Selenium
       #
 
       def set_primary_pointer(name)
-        pointer_inputs.each do |device|
-          if device.name == name
-            device.primary = true
-            @primary_pointer = device
-          else
-            device.primary = false
-          end
-        end
+        pointer_inputs.each { |device| device.primary = device.name == name ? true : false }
       end
 
       #
@@ -106,7 +99,7 @@ module Selenium
       #
 
       def get_device(name)
-        @devices.find { |device| device.name == name }
+        @devices.find { |device| device.name == name.to_s }
       end
 
       #
@@ -218,6 +211,18 @@ module Selenium
 
       def primary_pointer
         pointer_inputs.find(&:primary)
+      end
+
+      #
+      # Adds an InputDevice
+      #
+
+      def add_input(device)
+        unless @async
+          pauses = @devices.max { |a, b| a.actions.length <=> b.actions.length }
+          pauses.times { device.create_pause}
+        end
+        @devices << device
       end
     end # W3CActionBuilder
   end # WebDriver

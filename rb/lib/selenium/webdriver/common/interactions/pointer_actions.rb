@@ -31,13 +31,13 @@ module Selenium
       #    driver.action.pointer_down(:left).perform
       #
       # @param [Selenium::WebDriver::Interactions::PointerPress::BUTTONS] button the button to press.
-      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device with the button
+      # @param [Symbol || String] device_name optional name of the PointerInput device with the button
       #   that will be pressed, defaults to the primary PointerInput device.
       # @return [W3CActionBuilder] A self reference.
       #
 
-      def pointer_down(button, pointer = nil)
-        pointer = pointer || primary_pointer
+      def pointer_down(button, device_name = nil)
+        pointer = get_device(device_name) || primary_pointer
         pointer.create_pointer_down(button)
         tick(pointer)
         self
@@ -51,13 +51,13 @@ module Selenium
       #    driver.action.pointer_down(:left).pointer_up(:left).perform
       #
       # @param [Selenium::WebDriver::Interactions::PointerPress::BUTTONS] button the button to release.
-      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device with the button
-      #   that will be released, defaults to the primary PointerInput device.
+      # @param [Symbol || String] device_name optional name of the PointerInput device with the button that will
+      #   be released, defaults to the primary PointerInput device.
       # @return [W3CActionBuilder] A self reference.
       #
 
-      def pointer_up(button, pointer = nil)
-        pointer = pointer || primary_pointer
+      def pointer_up(button, device_name = nil)
+        pointer = get_device(device_name) || primary_pointer
         pointer.create_pointer_up(button)
         tick(pointer)
         self
@@ -88,13 +88,12 @@ module Selenium
       #   coordinates to the left of the element.
       # @param [Integer] down_by Optional offset from the top-left corner. A negative value means
       #   coordinates above the element.
-      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device with the button
-      #   that will be released, defaults to the primary PointerInput device.
+      # @param [Symbol || String] device_name optional name of the PointerInput device to move.
       # @return [W3CActionBuilder] A self reference.
       #
 
-      def move_to(element, right_by = nil, down_by = nil, pointer = nil)
-        pointer = pointer || primary_pointer
+      def move_to(element, right_by = nil, down_by = nil, device_name = nil)
+        pointer = get_device(device_name) || primary_pointer
         # New actions offset is from center of element
         if right_by || down_by
           size = element.size
@@ -123,14 +122,14 @@ module Selenium
       #
       # @param [Integer] right_by horizontal offset. A negative value means moving the mouse left.
       # @param [Integer] down_by vertical offset. A negative value means moving the mouse up.
-      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device with the button
-      #   that will be released, defaults to the primary PointerInput device.
+      # @param [Symbol || String] device_name optional name of the PointerInput device to move, defaults to the
+      #   primary PointerInput device.
       # @return [W3CActionBuilder] A self reference.
       # @raise [MoveTargetOutOfBoundsError] if the provided offset is outside the document's boundaries.
       #
 
-      def move_by(right_by, down_by, pointer = nil)
-        pointer = pointer || primary_pointer
+      def move_by(right_by, down_by, device_name = nil)
+        pointer = get_device(device_name) || primary_pointer
         pointer.create_pointer_move(DEFAULT_MOVE_DURATION,
                                     x: Integer(right_by),
                                     y: Integer(down_by),
@@ -151,12 +150,14 @@ module Selenium
       #
       # @param [Integer] x horizontal position. Equivalent to a css 'left' value.
       # @param [Integer] y vertical position. Equivalent to a css 'top' value.
+      # @param [Symbol || String] device_name optional name of the PointerInput device to move, defaults to the
+      #   primary PointerInput device.
       # @return [W3CActionBuilder] A self reference.
       # @raise [MoveTargetOutOfBoundsError] if the provided x or y value is outside the document's boundaries.
       #
 
-      def move_to_location(x, y, pointer = nil)
-        pointer = pointer || primary_pointer
+      def move_to_location(x, y, device_name = nil)
+        pointer = get_device(device_name) || primary_pointer
         pointer.create_pointer_move(DEFAULT_MOVE_DURATION,
                                     x: Integer(x),
                                     y: Integer(y),
@@ -177,13 +178,13 @@ module Selenium
       #    driver.action.click_and_hold(el).perform
       #
       # @param [Selenium::WebDriver::Element] element the element to move to and click.
-      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device to click with,
+      # @param [Symbol || String] device_name optional name of the PointerInput device to click with,
       #   defaults to the primary PointerInput device.
       # @return [W3CActionBuilder] A self reference.
       #
 
-      def click_and_hold(element = nil, pointer = nil)
-        pointer = pointer || primary_pointer
+      def click_and_hold(element = nil, device_name = nil)
+        pointer = get_device(device_name) || primary_pointer
         move_to(element, 0, 0, pointer) if element
         pointer_down(:left, pointer)
         self
@@ -197,13 +198,13 @@ module Selenium
       #    el = driver.find_element(id: "some_id")
       #    driver.action.click_and_hold(el).release.perform
       #
-      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device with the button
-      #   that will be pressed, defaults to the primary PointerInput device.
+      # @param [Symbol || String] device_name optional name of the PointerInput device with the button
+      #   that will be released, defaults to the primary PointerInput device.
       # @return [W3CActionBuilder] A self reference.
       #
 
-      def release(pointer = nil)
-        pointer = pointer || primary_pointer
+      def release(device_name = nil)
+        pointer = get_device(device_name) || primary_pointer
         pointer_up(:left, pointer)
         self
       end
@@ -225,13 +226,13 @@ module Selenium
       #    driver.action.click.perform
       #
       # @param [Selenium::WebDriver::Element] element An optional element to click.
-      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device with the button
-      #   that will be released, defaults to the primary PointerInput device.
+      # @param [Symbol || String] device_name optional name of the PointerInput device with the button
+      #   that will be clicked, defaults to the primary PointerInput device.
       # @return [W3CActionBuilder] A self reference.
       #
 
-      def click(element = nil, pointer = nil)
-        pointer = pointer || primary_pointer
+      def click(element = nil, device_name = nil)
+        pointer = get_device(device_name) || primary_pointer
         move_to(element, 0, 0, pointer) if element
         pointer_down(:left, pointer)
         pointer_up(:left, pointer)
@@ -255,13 +256,13 @@ module Selenium
       #    driver.action.double_click.perform
       #
       # @param [Selenium::WebDriver::Element] element An optional element to move to.
-      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device with the button
-      #   that will be released, defaults to the primary PointerInput device.
+      # @param [Symbol || String] device_name optional name of the PointerInput device with the button
+      #   that will be double-clicked, defaults to the primary PointerInput device.
       # @return [W3CActionBuilder] A self reference.
       #
 
-      def double_click(element = nil, pointer = nil)
-        pointer = pointer || primary_pointer
+      def double_click(element = nil, device_name = nil)
+        pointer = get_device(device_name) || primary_pointer
         move_to(element, 0, 0, pointer) if element
         click(nil, pointer)
         click(nil, pointer)
@@ -284,13 +285,13 @@ module Selenium
       #    driver.action.context_click.perform
       #
       # @param [Selenium::WebDriver::Element] element An element to context click.
-      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device with the button
-      #   that will be released, defaults to the primary PointerInput device.
+      # @param [Symbol || String] device_name optional name of the PointerInput device with the button
+      #   that will be context-clicked, defaults to the primary PointerInput device.
       # @return [W3CActionBuilder] A self reference.
       #
 
-      def context_click(element = nil, pointer = nil)
-        pointer = pointer || primary_pointer
+      def context_click(element = nil, device_name = nil)
+        pointer = get_device(device_name) || primary_pointer
         move_to(element, 0, 0, pointer) if element
         pointer_down(:right, pointer)
         pointer_up(:right, pointer)
@@ -311,13 +312,13 @@ module Selenium
       # @param [Selenium::WebDriver::Element] source element to emulate button down at.
       # @param [Selenium::WebDriver::Element] target element to move to and release the
       #   mouse at.
-      # @param [Selenium::WebDriver::Interactions::PointerInput] pointer optional PointerInput device with the button
-      #   that will be released, defaults to the primary PointerInput device.
+      # @param [Symbol || String] device_name optional name of the PointerInput device with the button
+      #   that will perform the drag and drop, defaults to the primary PointerInput device.
       # @return [W3CActionBuilder] A self reference.
       #
 
-      def drag_and_drop(source, target, pointer = nil)
-        pointer = pointer || primary_pointer
+      def drag_and_drop(source, target, device_name = nil)
+        pointer = get_device(device_name) || primary_pointer
         click_and_hold(source, pointer)
         move_to(target, 0, 0, pointer)
         release(pointer)
