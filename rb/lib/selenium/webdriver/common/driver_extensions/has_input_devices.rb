@@ -30,8 +30,14 @@ module Selenium
         # @api public
         #
 
-        def action
-          ActionBuilder.new mouse, keyboard
+        def action(async = false)
+          if @bridge.class < Remote::W3CBridge
+            W3CActionBuilder.new @bridge,
+                                 Interactions::PointerInput.new(:mouse, name: 'mouse', primary: true),
+                                 Interactions::KeyInput.new('keyboard'), async
+          else
+            ActionBuilder.new Mouse.new(@bridge), Keyboard.new(@bridge)
+          end
         end
 
         #
@@ -39,6 +45,10 @@ module Selenium
         #
 
         def mouse
+          warn <<-DEPRECATE.gsub(/\n +| {2,}/, ' ').freeze
+            [DEPRECATION] `driver.mouse` is deprecated with w3c implementation. Instead use 
+            driver.action.<command>.perform
+          DEPRECATE
           Mouse.new @bridge
         end
 
@@ -47,6 +57,10 @@ module Selenium
         #
 
         def keyboard
+          warn <<-DEPRECATE.gsub(/\n +| {2,}/, ' ').freeze
+            [DEPRECATION] `driver.keyboard` is deprecated with w3c implementation. Instead use 
+            driver.action.<command>.perform
+          DEPRECATE
           Keyboard.new @bridge
         end
       end # HasInputDevices
