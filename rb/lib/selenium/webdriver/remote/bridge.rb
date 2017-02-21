@@ -84,7 +84,6 @@ module Selenium
             DriverExtensions::TakesScreenshot,
             DriverExtensions::HasSessionId,
             DriverExtensions::Rotatable,
-            DriverExtensions::HasTouchScreen,
             DriverExtensions::HasLocation,
             DriverExtensions::HasNetworkConnection,
             DriverExtensions::HasRemoteStatus,
@@ -382,11 +381,13 @@ module Selenium
           ActionBuilder.new Mouse.new(self), Keyboard.new(self)
         end
 
+        def touch
+          warn "[DEPRECATION] `Driver#touch` is deprecated with w3c implementation. Instead use driver.action"
+          ActionBuilder.new(Mouse.new(self), Keyboard.new(self), touch_screen: TouchScreen.new(self))
+        end
+
         def mouse
-          warn <<-DEPRECATE.gsub(/\n +| {2,}/, ' ').freeze
-            [DEPRECATION] `Driver#mouse` is deprecated with w3c implementation. Instead use 
-            driver.action.<command>.perform
-          DEPRECATE
+          warn "[DEPRECATION] `Driver#mouse` is deprecated with w3c implementation. Instead use driver.action.<command>.perform"
           Mouse.new self
         end
 
@@ -396,6 +397,14 @@ module Selenium
             driver.action.<command>.perform
           DEPRECATE
           Keyboard.new self
+        end
+
+        def touch_screen
+          warn <<-DEPRECATE.gsub(/\n +| {2,}/, ' ').freeze
+            [DEPRECATION] `Driver#touch_screen` is deprecated with w3c implementation. Instead use 
+            driver.action.<command>.perform
+          DEPRECATE
+          TouchScreen.new self
         end
 
         def click_element(element)

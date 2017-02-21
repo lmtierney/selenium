@@ -141,6 +141,14 @@ module Selenium
         bridge.keyboard
       end
 
+      def touch
+        bridge.touch
+      end
+
+      def touch_screen
+        bridge.touch_screen
+      end
+
       #
       # Opens the specified URL in the browser.
       #

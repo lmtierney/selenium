@@ -387,12 +387,20 @@ module Selenium
         end
         alias_method :actions, :action
 
+        def touch
+          raise Error::UnsupportedOperationError, '#touch is no longer supported, use #action instead'
+        end
+
         def mouse
           raise Error::UnsupportedOperationError, '#mouse is no longer supported, use #action instead'
         end
 
         def keyboard
           raise Error::UnsupportedOperationError, '#keyboard is no longer supported, use #action instead'
+        end
+
+        def touch_screen
+          raise Error::UnsupportedOperationError, '#touch_screen is no longer supported, use #action instead'
         end
 
         def send_actions(data)
