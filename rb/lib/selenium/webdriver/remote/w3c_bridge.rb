@@ -111,7 +111,7 @@ module Selenium
         end
 
         def create_session(desired_capabilities)
-          resp = raw_execute :new_session, {}, {desiredCapabilities: desired_capabilities}
+          resp = execute :new_session, {}, {desiredCapabilities: desired_capabilities}
           @session_id = resp['sessionId']
           return W3CCapabilities.json_create resp['value'] if @session_id
 
@@ -603,8 +603,7 @@ module Selenium
         #
 
         def execute(*args)
-          result = raw_execute(*args)
-          result.payload.key?('value') ? result['value'] : result
+          raw_execute(*args)['value']
         end
 
         #
