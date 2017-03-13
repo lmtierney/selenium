@@ -9,6 +9,8 @@ if [[ $TOXENV == *"remote"* ]]; then
 fi
 
 if [[ ! -z $TOXENV ]]; then
+  ./go py_prep_for_install_release
+  python setup.py install
   py.test -v -s -n=auto --driver=Chrome
 fi
 
