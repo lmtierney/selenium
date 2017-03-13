@@ -13,7 +13,7 @@ if [[ ! -z $TOXENV ]]; then
   pip install pytest-instafail
   ./go py_prep_for_install_release
   python setup.py install
-  cd py
+  echo pwd
   py.test -v -s --driver=Chrome
 fi
 
