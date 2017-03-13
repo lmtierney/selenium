@@ -13,5 +13,5 @@ if [[ ! -z $TOXENV ]]; then
 fi
 
 if [[ ! -z $TASK ]]; then
-  ./go $TASK
+  ./go $TASK --trace
 fi
