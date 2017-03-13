@@ -9,9 +9,9 @@ if [[ $TOXENV == *"remote"* ]]; then
 fi
 
 if [[ ! -z $TOXENV ]]; then
-  tox
+  tox -v
 fi
 
 if [[ ! -z $TASK ]]; then
-  ./go $TASK --trace
+  ./go $TASK
 fi
