@@ -9,7 +9,7 @@ if [[ $TOXENV == *"remote"* ]]; then
 fi
 
 if [[ ! -z $TOXENV ]]; then
-  tox -v
+  py.test -v -s -n=auto --driver=Chrome
 fi
 
 if [[ ! -z $TASK ]]; then
