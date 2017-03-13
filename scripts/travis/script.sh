@@ -9,6 +9,9 @@ if [[ $TOXENV == *"remote"* ]]; then
 fi
 
 if [[ ! -z $TOXENV ]]; then
+  pip install pytest
+  pip install pytest-xdist
+  pip install pytest-instafail
   ./go py_prep_for_install_release
   python setup.py install
   py.test -v -s -n=auto --driver=Chrome
