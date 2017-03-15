@@ -4,6 +4,7 @@ if [[ ! -z $CHROME ]]; then
   export CHROMEDRIVER_VERSION=`curl -s http://chromedriver.storage.googleapis.com/LATEST_RELEASE`
   curl -L -O "http://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
   unzip chromedriver_linux64.zip && chmod +x chromedriver && sudo mv chromedriver /usr/local/bin
+  export DBUS_SESSION_BUS_ADDRESS=/dev/null
 fi
 
 if [[ ! -z $MARIONETTE ]]; then
