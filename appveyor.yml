@@ -4,6 +4,8 @@ environment:
   matrix:
     - RUBY_VERSION: 22-x64
       TASK: build
+    - RUBY_VERSION: 22-x64
+      TASK: //dotnet/test/ie:ie:run
     - RUBY_VERSION: 200-x64
       TASK: //rb:ie-test
 install:
