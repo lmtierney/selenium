@@ -87,6 +87,8 @@ def driver(request):
     if driver_class == 'Remote':
         capabilities = DesiredCapabilities.FIREFOX.copy()
         kwargs.update({'desired_capabilities': capabilities})
+    if driver_class == 'Chrome':
+        time.sleep(1)
     driver = getattr(webdriver, driver_class)(**kwargs)
     yield driver
     try:
