@@ -90,6 +90,8 @@ def driver(request):
     driver = getattr(webdriver, driver_class)(**kwargs)
     yield driver
     try:
+        if driver_class == 'Chrome':
+            time.sleep(1)
         driver.quit()
     except:
         pass
