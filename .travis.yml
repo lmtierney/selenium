@@ -36,20 +36,6 @@ matrix:
             - google-chrome-stable
     - language: python
       python: 2.7
-      env: CHROME=1 TOXENV=py27-chrome
-      addons:
-        apt:
-          packages:
-            - google-chrome-stable
-    - language: python
-      python: 3.6
-      env: CHROME=1 TOXENV=py36-chrome
-      addons:
-        apt:
-          packages:
-            - google-chrome-stable
-    - language: python
-      python: 2.7
       env: MARIONETTE=1 TOXENV=py27-marionette
       addons:
         firefox: latest-nightly
@@ -198,6 +184,20 @@ matrix:
       env: TOXENV=py36-remote
       addons:
         firefox: latest
+    - language: python
+      python: 2.7
+      env: CHROME=1 TOXENV=py27-chrome
+      addons:
+        apt:
+          packages:
+            - google-chrome-stable
+    - language: python
+      python: 3.6
+      env: CHROME=1 TOXENV=py36-chrome
+      addons:
+        apt:
+          packages:
+            - google-chrome-stable
     - language: ruby
       rvm: 2.3.3
       jdk: oraclejdk8
