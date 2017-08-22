@@ -29,8 +29,8 @@ def opts():
 
 
 def test_arguments(opts):
-    arg1 = 'log-level=TRACE'
-    arg2 = 'log-file=trace.log'
+    arg1 = '-k'
+    arg2 = '-private'
     opts.add_argument(arg1)
     opts.add_argument(arg2)
     assert arg1 in opts.arguments
@@ -148,7 +148,7 @@ def test_to_capabilities(opts):
     assert opts.to_capabilities().get(Options.KEY) == opts._options
 
 def test_to_capabilities_arguments(opts):
-    arg = 'log-level=TRACE'
+    arg = '-k'
     opts.add_argument(arg)
     caps_opts = opts.to_capabilities().get(Options.KEY)
     assert caps_opts.get(Options.SWITCHES) == arg
@@ -163,7 +163,7 @@ def test_to_capabilities_additional_options(opts):
 
 def test_to_capabilities_should_not_modify_set_options(opts):
     opts._options['foo'] = 'bar'
-    arg = 'log-level=TRACE'
+    arg = '-k'
     opts.add_argument(arg)
     opts.add_additional_option('baz', 'qux')
     opts.to_capabilities().get(Options.KEY)
