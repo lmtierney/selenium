@@ -97,7 +97,7 @@ class Options(object):
         """
         if value not in [ElementScrollBehavior.TOP, ElementScrollBehavior.BOTTOM]:
             raise ValueError('Element Scroll Behavior out of range.')
-        self._options[self.BROWSER_ATTACH_TIMEOUT] = value
+        self._options[self.ELEMENT_SCROLL_BEHAVIOR] = value
 
     @property
     def ensure_clean_session(self):
@@ -327,12 +327,13 @@ class Options(object):
 
     def to_capabilities(self):
         """ Marshals the IE options to a the correct object """
+        opts = self._options.copy()
         if len(self._arguments) > 0:
-            self._options[self.SWITCHES] = self._arguments
+            opts[self.SWITCHES] = ' '.join(self._arguments)
 
         if len(self._additional) > 0:
-            self._options.update(self._additional)
+            opts.update(self._additional)
 
-        if len(self._options) > 0:
-            return {self.KEY: self._options}
+        if len(opts) > 0:
+            return {self.KEY: opts}
         return {}
