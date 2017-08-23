@@ -49,4 +49,4 @@ def test_launch_ie_with_options(pages):
     driver = Ie(ie_options=opts)
     actual = driver.current_url
     driver.quit()
-    assert actual == expected
+    assert expected in actual
