@@ -5,6 +5,8 @@ environment:
     - RUBY_VERSION: 200
       TASK: build
     - RUBY_VERSION: 200
+      TASK: test_ie
+    - RUBY_VERSION: 200
       TASK: //rb:ie-test
 install:
   - 'set JAVA_HOME=C:\Program Files (x86)\Java\jdk1.8.0'
