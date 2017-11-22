@@ -53,59 +53,7 @@ matrix:
       <<: *java
       <<: *chrome
   include:
-    - env: TASK=build
-      <<: *java
-    - env: TASK=//javascript/atoms:atoms
-      <<: *java
-    - env: TASK=//javascript/webdriver:all_js
-      <<: *java
-    - env: TASK=//javascript/ie-driver:atoms
-      <<: *java
-    - env: TASK=//javascript/chrome-driver:atoms
-      <<: *java
-    - env: TASK="//javascript/android-atoms:atoms ios_driver"
-      <<: *java
-    - env: TASK=//java/client/test/org/openqa/selenium/atoms:test:run
-      <<: *java
-    - env: CHROME=1 TASK="calcdeps //javascript/selenium-atoms:selenium-atoms-chrome:run"
-      <<: *java
-      <<: *chrome
-    - env: CHROME=1 TASK="calcdeps //javascript/selenium-core:selenium-core-chrome:run"
-      <<: *java
-      <<: *chrome
-    - env: CHROME=1 TASK="calcdeps //javascript/webdriver:webdriver-chrome:run"
-      <<: *java
-      <<: *chrome
-    - env: MARIONETTE=1 TASK="calcdeps //javascript/atoms:atoms-firefox:run"
-      <<: *java
-      <<: *firefox-latest
-    - env: MARIONETTE=1 TASK="calcdeps //javascript/webdriver:webdriver-firefox:run"
-      <<: *java
-      <<: *firefox-latest
-    - env: MARIONETTE=1 TASK="calcdeps //javascript/selenium-atoms:selenium-atoms-firefox:run"
-      <<: *java
-      <<: *firefox-latest
-    - env: MARIONETTE=1 TASK="calcdeps //javascript/selenium-core:selenium-core-firefox:run"
-      <<: *java
-      <<: *firefox-latest
-    - env: TASK=test_firefox
-      <<: *java
-      <<: *firefox-esr
-    - env: MARIONETTE=1 TASK=//java/client/test/org/openqa/selenium/firefox:marionette:run
-      <<: *java
-      <<: *firefox-nightly
-    - env: TASK=test_java_small_tests
-      <<: *java
-    - env: MARIONETTE=1 TASK=test_grid
-      <<: *java
-      <<: *firefox-nightly
-    - env: TASK=test_htmlunit
-      <<: *java
-    - env: TASK=javadocs
-      <<: *java
     - env: TOXENV=flake8
-      <<: *python
-    - env: TOXENV=docs
       <<: *python
     - env: TOXENV=py27-unit
       <<: *python
@@ -146,30 +94,6 @@ matrix:
       <<: *python
       <<: *firefox-nightly
       python: 3.6
-    - env: TASK=//rb:unit-test
-      <<: *ruby
-    - env: CHROME=1 TASK=//rb:chrome-test
-      <<: *ruby
-      <<: *chrome
-    - env: MARIONETTE=1 TASK=//rb:firefox-test
-      <<: *ruby
-      <<: *firefox-latest
-    - env: TASK=//rb:ff-esr-test
-      <<: *ruby
-      <<: *firefox-esr
-    - env: CHROME=1 TASK=//rb:remote-chrome-test
-      <<: *ruby
-      <<: *chrome
-    - env: MARIONETTE=1 TASK=//rb:remote-firefox-test
-      <<: *ruby
-      <<: *firefox-latest
-    - env: TASK=//rb:remote-ff-esr-test
-      <<: *ruby
-      <<: *firefox-esr
-    - env: TASK=//rb:docs
-      <<: *ruby
-    - env: TASK=//rb:lint
-      <<: *ruby
   allow_failures:
     - env: CHROME=1 TASK=//java/client/test/com/thoughtworks/selenium:chrome-rc-test:run
     - env: MARIONETTE=1 TASK=//java/client/test/com/thoughtworks/selenium:firefox-rc-test:run
