@@ -82,7 +82,7 @@ class FirefoxProfile(object):
         self.extensionsDir = os.path.join(self.profile_dir, "extensions")
         self.userPrefs = os.path.join(self.profile_dir, "user.js")
         if os.path.isfile(self.userPrefs):
-            os.chmod(self.userPrefs, 0o644)
+            os.chmod(self.userPrefs, 0o755)
 
     # Public Methods
     def set_preference(self, key, value):
