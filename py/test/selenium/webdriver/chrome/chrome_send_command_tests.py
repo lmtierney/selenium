@@ -15,15 +15,15 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from selenium.webdriver.remote.remote_connection import RemoteConnection
+
+def test_send_command(driver, pages):
+    pages.load('formPage.html')
+    url = pages.url('readOnlyPage.html')
+    driver.send_command('Page.navigate', url=url)
+    assert 'readOnlyPage.html' in driver.current_url
 
 
-class ChromeRemoteConnection(RemoteConnection):
-
-    def __init__(self, remote_server_addr, keep_alive=True):
-        RemoteConnection.__init__(self, remote_server_addr, keep_alive)
-        self._commands["launchApp"] = ('POST', '/session/$sessionId/chromium/launch_app')
-        self._commands["setNetworkConditions"] = ('POST', '/session/$sessionId/chromium/network_conditions')
-        self._commands["getNetworkConditions"] = ('GET', '/session/$sessionId/chromium/network_conditions')
-        self._commands["sendCommand"] = ('POST', '/session/$sessionId/chromium/send_command')
-        self._commands["sendCommandGetResult"] = ('POST', '/session/$sessionId/chromium/send_command_and_get_result')
+def test_send_command_get_result(driver, pages):
+    pages.load('formPage.html')
+    result = driver.send_command_get_result('DOM.getDocument')
+    assert result['root']['nodeName'] == '#document'

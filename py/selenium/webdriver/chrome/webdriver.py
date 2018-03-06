@@ -115,6 +115,35 @@ class WebDriver(RemoteWebDriver):
             'network_conditions': network_conditions
         })
 
+    def send_command(self, cmd, **params):
+        """
+        Sends a command to Chrome DevTools API
+
+        :Args:
+         - cmd: Devtools API Command
+         - params: parameters for command
+
+        :Usage:
+            driver.send_command('Page.navigate', url='http://www.example.com')
+        """
+        self.execute('sendCommand', {'cmd': cmd, 'params': params})
+
+    def send_command_get_result(self, cmd, **params):
+        """
+        Sends a command to Chrome DevTools API
+
+        :Args:
+         - cmd: Devtools API Command
+         - params: parameters for command
+
+        :Returns:
+         dict object
+
+        :Usage:
+            result = driver.send_command_get_result('DOM.querySelector', nodeId=123)
+        """
+        return self.execute('sendCommandGetResult', {'cmd': cmd, 'params': params})['value']
+
     def quit(self):
         """
         Closes the browser and shuts down the ChromeDriver executable
