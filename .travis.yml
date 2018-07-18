@@ -16,6 +16,7 @@ _bindings:
   python: &python
     language: python
     python: "2.7"
+    before_install: jdk_switcher use oraclejdk8
   ruby: &ruby
     language: ruby
     rvm: 2.0.0-p648
