@@ -68,7 +68,7 @@ matrix:
   include:
     - env: MARIONETTE=1 TOXENV=py36-remote
       <<: *python
-      <<: *firefox-esr
+      <<: *firefox-nightly
       python: 3.6
 before_install: ./scripts/travis/before_install.sh
 install: ./scripts/travis/install.sh
