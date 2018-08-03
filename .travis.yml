@@ -115,7 +115,7 @@ matrix:
       <<: *python
       <<: *firefox-esr
       python: 3.7
-    - env: TOXENV=py37-remote
+    - env: MARIONETTE=1 TOXENV=py37-remote
       <<: *python
       <<: *firefox-esr
       python: 3.7
