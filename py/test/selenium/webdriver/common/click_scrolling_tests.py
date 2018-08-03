@@ -88,6 +88,7 @@ def testShouldNotScrollOverflowElementsWhichAreVisible(driver, pages):
 @pytest.mark.xfail_chrome(
     reason='https://bugs.chromium.org/p/chromedriver/issues/detail?id=1542')
 @pytest.mark.xfail_marionette
+@pytest.mark.xfail_remote
 def testShouldNotScrollIfAlreadyScrolledAndElementIsInView(driver, pages):
     pages.load("scroll3.html")
     driver.find_element(By.ID, "button1").click()
@@ -172,6 +173,8 @@ def getScrollTop(driver):
 
 
 @pytest.mark.xfail_marionette(
+    reason='https://github.com/w3c/webdriver/issues/408')
+@pytest.mark.xfail_remote(
     reason='https://github.com/w3c/webdriver/issues/408')
 def testShouldBeAbleToClickElementInATallFrame(driver, pages):
     pages.load("scrolling_tests/page_with_tall_frame.html")

@@ -28,20 +28,19 @@ def capabilities():
 
 
 @pytest.fixture
-def driver(capabilities, profile):
+def driver(capabilities, options):
     driver = webdriver.Remote(
         desired_capabilities=capabilities,
-        browser_profile=profile)
+        options=options)
     yield driver
     driver.quit()
 
 
 @pytest.fixture
-def profile():
-    profile = webdriver.FirefoxProfile()
-    profile.set_preference('browser.startup.homepage', 'about:')
-    profile.update_preferences()
-    return profile
+def options():
+    options = webdriver.FirefoxOptions()
+    options.set_preference('browser.startup.homepage', 'about:')
+    return options
 
 
 def test_profile_is_used(driver):
