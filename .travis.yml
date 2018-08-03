@@ -107,7 +107,7 @@ matrix:
     - env: TOXENV=py37-unit
       <<: *python
       python: 3.7
-    - env: CHROME=1 TOXENV=py37-chrome
+    - env: CHROME=1 TOXENV=py36-chrome
       <<: *python
       <<: *chrome
       python: 3.6
