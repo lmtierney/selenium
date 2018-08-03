@@ -28,10 +28,8 @@ def capabilities():
 
 
 @pytest.fixture
-def driver(capabilities, options):
-    driver = webdriver.Remote(
-        desired_capabilities=capabilities,
-        options=options)
+def driver(options):
+    driver = webdriver.Remote(options=options)
     yield driver
     driver.quit()
 
