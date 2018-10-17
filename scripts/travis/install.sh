@@ -24,4 +24,4 @@ fi
 echo -e "[ui]\n  superconsole = disabled\n" >> .buckconfig.local
 
 # buckw uses requests to download buck executable
-pip install requests
+pip install requests --no-index --find-links=../../third_party/py
