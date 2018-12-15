@@ -3,13 +3,7 @@ build: off
 environment:
   matrix:
     - RUBY_VERSION: 200
-      TASK: build
-    - RUBY_VERSION: 200
-      TASK: //rb:ie-test
-    - RUBY_VERSION: 200
-      TASK: //rb:remote-ie-test
-    - RUBY_VERSION: 200
-      TASK: test_ie
+      TASK: //rb:edge-test
 install:
   - 'set JAVA_HOME=C:\Program Files (x86)\Java\jdk1.8.0'
   - 'set PATH=%JAVA_HOME%;%PATH%'
@@ -17,6 +11,8 @@ install:
   - 'set PATH=%RUBY_HOME%;%PATH%'
   - 'set BUCK_EXTRA_JAVA_ARGS=-Djna.nosys=true'
 before_test:
+  - curl -fL -o C:\\Tools\\WebDriver\\MicrosoftWebDriver.exe https://download.microsoft.com/download/F/8/A/F8AF50AB-3C3A-4BC4-8773-DC27B32988DD/MicrosoftWebDriver.exe
+  - MicrosoftWebDriver.exe --version
   - copy cpp\prebuilt\Win32\Release\IEDriverServer.exe C:\Tools\WebDriver
   - ruby -v
   - gem -v
@@ -26,6 +22,7 @@ before_test:
   - geckodriver.exe --version
   - IEDriverServer.exe --version
   - dir C:\Tools\WebDriver
+  - powershell get-appxpackage *edge*
 
 test_script:
   - cmd: scripts/appveyor/script.bat

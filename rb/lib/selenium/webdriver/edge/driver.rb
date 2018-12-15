@@ -52,7 +52,6 @@ module Selenium
 
           WebDriver.logger.info 'Forcing W3C dialect.'
           @bridge = Remote::W3C::Bridge.new(capabilities, bridge.session_id, opts)
-          @bridge.extend Edge::Bridge
 
           super(@bridge, listener: listener)
         end
