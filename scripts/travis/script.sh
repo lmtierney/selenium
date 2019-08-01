@@ -37,7 +37,7 @@ if [[ ! -z "$BUCK" ]]; then
 fi
 
 if [[ ! -z "$NPM" ]]; then
-  if [[ $TRAVIS_PULL_REQUEST == "false" ]] git diff --name-only HEAD~1| grep '^javascript/' >/dev/null ]]; then
+  if [[ $TRAVIS_PULL_REQUEST == "false" ]] || [[ git diff --name-only HEAD~1| grep '^javascript/' >/dev/null ]]; then
     ./go node:atoms
     cd javascript/node/selenium-webdriver; npm install; npm run $NPM
   fi
