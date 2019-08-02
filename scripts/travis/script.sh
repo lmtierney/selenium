@@ -4,6 +4,10 @@ if [[ $TOXENV == *"remote"* ]]; then
   ./go selenium-server-standalone
 fi
 
+echo $TRAVIS_PULL_REQUEST
+echo "hi"
+echo "$TRAVIS_PULL_REQUEST"
+
 # Tests will be run only when each folder, such as /py, is modified
 if [[ ! -z $TOXENV ]]; then
   if [[ $TRAVIS_PULL_REQUEST == "false" ]] || [[ git diff --name-only HEAD~1| grep '^py/' >/dev/null ]]; then
